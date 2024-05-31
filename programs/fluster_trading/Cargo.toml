@@ -1,0 +1,48 @@
+[package]
+name = "fluster_trading"
+version = "0.1.0"
+description = "Fluster trading will make you agitated or confused"
+edition = "2021"
+authors = ["danielbui12"]
+license = "Apache-2.0"
+homepage = "https://github.com/danielbui12/fluster_trading"
+repository = "https://github.com/danielbui12/fluster_trading"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "fluster_trading"
+
+[features]
+default = ["enable-log"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+enable-log = []
+devnet = []
+
+[dependencies]
+anchor-lang = { version = "0.29.0", features = ["init-if-needed"] }
+anchor-spl = { version = "0.29.0", features = ["metadata"] }
+spl-token = { version = "4.0.0", features = ["no-entrypoint"] }
+spl-math = { version = "0.2", features = ["no-entrypoint"] }
+spl-memo = "4.0.0"
+uint = "0.9.1"
+solana-security-txt = "1.1.1"
+pyth-sdk-solana = "0.10.1"
+# raydium-amm-anchor = { path = "../../modules/raydium-amm-anchor", features = [] }
+
+[dev-dependencies]
+quickcheck = "0.9"
+proptest = "1.0"
+rand = "0.8.5"
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+overflow-checks = true
+[profile.release.build-override]
+opt-level = 3
+incremental = false
+codegen-units = 1
