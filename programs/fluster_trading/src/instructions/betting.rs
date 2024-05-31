@@ -24,10 +24,6 @@ pub struct Betting<'info> {
     )]
     pub authority: UncheckedAccount<'info>,
 
-    /// The factory state to read protocol fees
-    #[account(address = pool_state.load()?.app_config)]
-    pub app_config: Box<Account<'info, AppConfig>>,
-
     /// The program account of the pool in which the swap will be performed
     #[account(mut)]
     pub pool_state: AccountLoader<'info, PoolState>,

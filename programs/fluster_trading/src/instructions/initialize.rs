@@ -16,9 +16,6 @@ pub struct Initialize<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    /// Which config the pool belongs to.
-    pub app_config: Box<Account<'info, AppConfig>>,
-
     /// CHECK: pool vault and token mint authority
     #[account(
         seeds = [
@@ -33,7 +30,6 @@ pub struct Initialize<'info> {
         init,
         seeds = [
             POOL_SEED.as_bytes(),
-            app_config.key().as_ref(),
             token_mint.key().as_ref(),
         ],
         bump,
@@ -73,7 +69,11 @@ pub struct Initialize<'info> {
     pub rent: Sysvar<'info, Rent>,
 }
 
-pub fn initialize(ctx: Context<Initialize>, max_leverage: u8) -> Result<()> {
+pub fn initialize(
+    ctx: Context<Initialize>,
+    max_leverage: u8,
+    protocol_fee_rate: u16,
+) -> Result<()> {
     if !is_supported_mint(&ctx.accounts.token_mint).unwrap() {
         return err!(ErrorCode::NotSupportMint);
     }
@@ -109,7 +109,7 @@ pub fn initialize(ctx: Context<Initialize>, max_leverage: u8) -> Result<()> {
         ctx.bumps.authority,
         ctx.bumps.token_vault,
         max_leverage,
-        ctx.accounts.app_config.key(),
+        protocol_fee_rate,
         ctx.accounts.token_vault.key(),
         ctx.accounts.token_oracle.key(),
         &ctx.accounts.token_mint,

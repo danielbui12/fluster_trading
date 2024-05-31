@@ -18,6 +18,8 @@ pub struct BettingState {
     pub current_price: u64,
     /// destination timestamp
     pub destination_timestamp: u64,
+    /// current price
+    pub result_price: u64,
 }
 
 impl BettingState {

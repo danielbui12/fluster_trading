@@ -20,8 +20,6 @@ pub enum PoolStatusBitFlag {
 #[repr(packed)]
 #[derive(Default, Debug, InitSpace)]
 pub struct PoolState {
-    /// Which config the pool belongs
-    pub app_config: Pubkey,
     /// Which config the vault belongs
     pub vault_bump: u8,
     /// Token oracle account
@@ -43,6 +41,8 @@ pub struct PoolState {
     /// bit1, 1: disable withdraw(value is 2), 0: normal
     /// bit2, 1: disable swap(value is 4), 0: normal
     pub status: u8,
+    /// The protocol fee. DENUMERATOR: 10_000 aka 100%
+    pub protocol_fee_rate: u16,
     /// padding for future updates
     pub padding: [u64; 32],
 }
@@ -53,12 +53,11 @@ impl PoolState {
         auth_bump: u8,
         vault_bump: u8,
         max_leverage: u8,
-        app_config: Pubkey,
+        protocol_fee_rate: u16,
         token_vault: Pubkey,
         token_oracle: Pubkey,
         token_mint: &InterfaceAccount<Mint>,
     ) {
-        self.app_config = app_config.key();
         self.token_vault = token_vault;
         self.token_mint = token_mint.key();
         self.token_program = *token_mint.to_account_info().owner;
@@ -67,6 +66,7 @@ impl PoolState {
         self.mint_decimals = token_mint.decimals;
         self.token_oracle = token_oracle;
         self.max_leverage = max_leverage;
+        self.protocol_fee_rate = protocol_fee_rate;
     }
 
     pub fn set_status(&mut self, status: u8) {

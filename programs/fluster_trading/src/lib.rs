@@ -48,40 +48,6 @@ pub const USER_SEED: &str = "user_auth_seed";
 pub mod fluster_trading {
     use super::*;
 
-    // The configuration of AMM protocol, include trade fee and protocol fee
-    /// # Arguments
-    ///
-    /// * `ctx`- The accounts needed by instruction.
-    /// * `index` - The index of amm config, there may be multiple config.
-    /// * `fund_fee_rate` - Fund fee rate, can be changed.
-    /// * `protocol_fee_rate` - Protocol fee rate, can be changed.
-    ///
-    pub fn create_app_config(
-        ctx: Context<CreateAppConfig>,
-        index: u16,
-        protocol_fee_rate: u64,
-        fund_fee_rate: u64,
-    ) -> Result<()> {
-        instructions::create_app_config(ctx, index, protocol_fee_rate, fund_fee_rate)
-    }
-
-    /// Updates the owner of the amm config
-    /// Must be called by the current owner or admin
-    ///
-    /// # Arguments
-    ///
-    /// * `ctx`- The context of accounts
-    /// * `trade_fee_rate`- The new trade fee rate of amm config, be set when `param` is 0
-    /// * `protocol_fee_rate`- The new protocol fee rate of amm config, be set when `param` is 1
-    /// * `fund_fee_rate`- The new fund fee rate of amm config, be set when `param` is 2
-    /// * `new_owner`- The config's new owner, be set when `param` is 3
-    /// * `new_fund_owner`- The config's new fund owner, be set when `param` is 4
-    /// * `param`- The value can be 0 | 1, otherwise will report a error
-    ///
-    pub fn update_app_config(ctx: Context<UpdateAppConfig>, param: u8, value: u64) -> Result<()> {
-        instructions::update_app_config(ctx, param, value)
-    }
-
     /// Initialize token pool
     ///
     /// # Arguments
@@ -89,8 +55,25 @@ pub mod fluster_trading {
     /// * `ctx`- The context of accounts
     /// * `max_leverage` - the maximum leverage allowed
     ///
-    pub fn initialize(ctx: Context<Initialize>, max_leverage: u8) -> Result<()> {
-        instructions::initialize(ctx, max_leverage)
+    pub fn initialize(
+        ctx: Context<Initialize>,
+        max_leverage: u8,
+        protocol_fee_rate: u16,
+    ) -> Result<()> {
+        instructions::initialize(ctx, max_leverage, protocol_fee_rate)
+    }
+
+    /// Update pool state
+    /// Must be called by the current admin
+    ///
+    /// # Arguments
+    ///
+    /// * `ctx`- The context of accounts
+    /// * `param`- The value can be 0, otherwise will report a error
+    /// * `value`- The value of the equivalent field
+    ///
+    pub fn update_pool_state(ctx: Context<UpdatePoolState>, param: u8, value: u64) -> Result<()> {
+        instructions::update_pool_state(ctx, param, value)
     }
 
     /// User deposits token to vault
@@ -145,12 +128,24 @@ pub mod fluster_trading {
     }
 
     /// Reveal the order after the deadline
+    /// Must be called by the current admin
     ///
     /// # Arguments
     ///
     /// * `ctx`- The context of accounts
     ///
     pub fn reveal(ctx: Context<Betting>) -> Result<()> {
+        // instructions::reveal(ctx)
+        Ok(())
+    }
+
+    /// Claim the order after revealed
+    ///
+    /// # Arguments
+    ///
+    /// * `ctx`- The context of accounts
+    ///
+    pub fn claim(ctx: Context<Betting>) -> Result<()> {
         // instructions::reveal(ctx)
         Ok(())
     }

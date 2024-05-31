@@ -1,6 +1,3 @@
-pub mod config;
-pub use config::*;
-
 pub mod betting;
 pub use betting::*;
 

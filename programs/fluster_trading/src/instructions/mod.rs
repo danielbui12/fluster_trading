@@ -12,3 +12,6 @@ pub use deposit::*;
 
 pub mod withdraw;
 pub use withdraw::*;
+
+pub mod update_pool_config;
+pub use update_pool_config::*;
