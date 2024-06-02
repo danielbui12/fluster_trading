@@ -15,3 +15,6 @@ pub use withdraw::*;
 
 pub mod update_pool_config;
 pub use update_pool_config::*;
+
+pub mod close_account;
+pub use close_account::*;

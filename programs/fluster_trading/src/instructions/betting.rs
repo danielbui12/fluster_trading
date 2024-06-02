@@ -8,14 +8,16 @@ use anchor_spl::{
     token_interface::{Mint, TokenAccount}
 };
 use pyth_sdk_solana::state::SolanaPriceAccount;
+use clockwork_sdk::state::{Thread, ThreadAccount};
 
 #[derive(Accounts)]
+#[instruction(thread_id: Vec<u8>)]
 pub struct Betting<'info> {
     /// The user performing the trading
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    /// CHECK: pool vault and lp mint authority
+    /// CHECK: authority
     #[account(
         seeds = [
             crate::AUTH_SEED.as_bytes(),
@@ -71,6 +73,14 @@ pub struct Betting<'info> {
     )]
     pub token_mint: Box<InterfaceAccount<'info, Mint>>,
 
+    /// Address to assign to the newly created thread.
+    #[account(mut, address = Thread::pubkey(authority.key(), thread_id))]
+    pub thread: SystemAccount<'info>,
+
+    /// The Clockwork thread program.
+    #[account(address = clockwork_sdk::ID)]
+    pub clockwork_program: Program<'info, clockwork_sdk::ThreadProgram>,
+
     /// The mint of token_0
     #[account(
         address = pool_state.load()?.token_program
@@ -82,6 +92,7 @@ pub struct Betting<'info> {
 
 pub fn betting(
     ctx: Context<Betting>,
+    thread_id: Vec<u8>,
     trade_direction: u8,
     leverage: u8,
     amount_in: u64,
@@ -97,6 +108,7 @@ pub fn betting(
     let actual_amount = amount_in.checked_div(leverage as u64).unwrap();
     require_gt!(actual_amount, 0);
 
+    let auth = [&[crate::AUTH_SEED.as_bytes(), &[pool_state.auth_bump]]];
     transfer_token(
         ctx.accounts.authority.to_account_info(),
         ctx.accounts.token_account.to_account_info(),
@@ -106,7 +118,7 @@ pub fn betting(
         actual_amount,
         ctx.accounts.token_mint.decimals,
         true,
-        &[&[crate::AUTH_SEED.as_bytes(), &[pool_state.auth_bump]]],
+        &auth,
     )?;
 
     let current_token_price = {
@@ -124,6 +136,7 @@ pub fn betting(
         );
         #[cfg(feature = "enable-log")]
         msg!("current_price:{}", display_price);
+
         u64::try_from(current_price.price).unwrap()
     };
 
@@ -136,6 +149,38 @@ pub fn betting(
         current_token_price,
         (block_timestamp as u64).checked_add(duration).unwrap()
     );
+
+    // 1️⃣ Prepare an instruction to be automated.
+    let target_ix = Instruction {
+        program_id: ID,
+        accounts: crate::accounts::Increment {
+            counter: counter.key(),
+            thread: thread.key(),
+            thread_authority: thread_authority.key(),
+        }
+        .to_account_metas(Some(true)),
+        data: crate::instruction::Increment {}.data(),
+    };
+
+    let trigger = clockwork_sdk::state::Trigger::Timestamp {
+       unix_ts: block_timestamp.checked_add(duration as i64).unwrap(),
+    };
+    clockwork_sdk::cpi::thread_create(
+        CpiContext::new_with_signer(
+            ctx.accounts.clockwork_program.to_account_info(),
+            clockwork_sdk::cpi::ThreadCreate {
+                payer: ctx.accounts.payer.to_account_info(),
+                system_program: ctx.accounts.system_program.to_account_info(),
+                thread: ctx.accounts.thread.to_account_info(),
+                authority: ctx.accounts.authority.to_account_info(),
+            },
+            &auth,
+        ),
+        crate::CLOCK_WORK_FEE,
+        thread_id,
+        vec![target_ix.into()],
+        trigger,
+    )?;
 
     emit!(OrderPlaced {
         betting_id: ctx.accounts.user_betting.key(),

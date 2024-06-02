@@ -43,6 +43,7 @@ pub mod pool_fee_receiver {
 
 pub const AUTH_SEED: &str = "vault_auth_seed";
 pub const USER_SEED: &str = "user_auth_seed";
+pub const CLOCK_WORK_FEE: u64 = LAMPORTS_PER_SOL / 100;
 
 #[program]
 pub mod fluster_trading {
@@ -98,6 +99,16 @@ pub mod fluster_trading {
         instructions::withdraw(ctx, amount)
     }
 
+    /// User close account
+    ///
+    /// # Arguments
+    ///
+    /// * `ctx`- The context of accounts
+    ///
+    pub fn close_account(ctx: Context<CloseAccount>) -> Result<()> {
+        instructions::close_account(ctx)
+    }
+
     /// Place an betting order for the given token pool
     ///
     /// # Arguments
@@ -108,12 +119,13 @@ pub mod fluster_trading {
     ///
     pub fn betting(
         ctx: Context<Betting>,
+        thread_id: Vec<u8>,
         trade_direction: u8,
         leverage: u8,
         amount: u64,
         duration: u64,
     ) -> Result<()> {
-        instructions::betting(ctx, trade_direction, leverage, amount, duration)
+        instructions::betting(ctx, thread_id, trade_direction, leverage, amount, duration)
     }
 
     /// Cancel the betting order
