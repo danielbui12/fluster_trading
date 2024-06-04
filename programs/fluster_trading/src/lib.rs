@@ -8,6 +8,7 @@ use anchor_lang::prelude::*;
 use instructions::*;
 
 use solana_security_txt::security_txt;
+use spl_memo::solana_program::native_token::LAMPORTS_PER_SOL;
 
 #[cfg(not(feature = "no-entrypoint"))]
 security_txt! {
@@ -39,6 +40,14 @@ pub mod pool_fee_receiver {
     declare_id!("Kd8e8t428wuB68bpksHTqu4VbM97cqYa3AKP3osYsKH");
     #[cfg(not(feature = "devnet"))]
     declare_id!("Kd8e8t428wuB68bpksHTqu4VbM97cqYa3AKP3osYsKH");
+}
+
+pub mod currency {
+    use anchor_lang::prelude::declare_id;
+    #[cfg(feature = "devnet")]
+    declare_id!("animnB3RP6asQBWJhCCNGiLqM9wEZoFhAe3h7UmU2qM");
+    #[cfg(not(feature = "devnet"))]
+    declare_id!("animnB3RP6asQBWJhCCNGiLqM9wEZoFhAe3h7UmU2qM");
 }
 
 pub const AUTH_SEED: &str = "vault_auth_seed";
@@ -123,9 +132,26 @@ pub mod fluster_trading {
         trade_direction: u8,
         leverage: u8,
         amount: u64,
-        duration: u64,
+        destination_timestamp: i64,
     ) -> Result<()> {
-        instructions::betting(ctx, thread_id, trade_direction, leverage, amount, duration)
+        instructions::betting(
+            ctx,
+            thread_id,
+            trade_direction,
+            leverage,
+            amount,
+            destination_timestamp,
+        )
+    }
+
+    /// Reveal the order after the deadline
+    ///
+    /// # Arguments
+    ///
+    /// * `ctx`- The context of accounts
+    ///
+    pub fn reveal(ctx: Context<Reveal>) -> Result<()> {
+        instructions::reveal(ctx)
     }
 
     /// Cancel the betting order
@@ -134,31 +160,17 @@ pub mod fluster_trading {
     ///
     /// * `ctx`- The context of accounts
     ///
-    pub fn cancel(ctx: Context<Betting>) -> Result<()> {
-        // instructions::cancel(ctx)
-        Ok(())
+    pub fn cancel(ctx: Context<Reveal>) -> Result<()> {
+        instructions::cancel(ctx)
     }
 
-    /// Reveal the order after the deadline
-    /// Must be called by the current admin
+    /// Complete the order after revealed
     ///
     /// # Arguments
     ///
     /// * `ctx`- The context of accounts
     ///
-    pub fn reveal(ctx: Context<Betting>) -> Result<()> {
-        // instructions::reveal(ctx)
-        Ok(())
-    }
-
-    /// Claim the order after revealed
-    ///
-    /// # Arguments
-    ///
-    /// * `ctx`- The context of accounts
-    ///
-    pub fn claim(ctx: Context<Betting>) -> Result<()> {
-        // instructions::reveal(ctx)
+    pub fn complete(ctx: Context<Betting>) -> Result<()> {
         Ok(())
     }
 }

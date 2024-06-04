@@ -9,8 +9,6 @@ pub struct PoolInitialized {
     pub max_leverage: u8,
     /// token oracle
     pub token_oracle: Pubkey,
-    /// token mint
-    pub token_mint: Pubkey,
 }
 
 /// Emitted when place an betting order
@@ -28,6 +26,28 @@ pub struct OrderPlaced {
     pub trade_direction: u8,
     /// leverage
     pub leverage: u8,
-    /// duration
-    pub duration: u64,
+    /// destination timestamp
+    pub destination_timestamp: u64,
+    /// thread id
+    pub thread_id: Vec<u8>,
+}
+
+/// Emitted when place an betting order
+#[event]
+pub struct OrderFulfilled {
+    #[index]
+    pub betting_id: Pubkey,
+    #[index]
+    pub pool_id: Pubkey,
+    /// result
+    pub result: u64,
+}
+
+/// Emitted when cancel an betting order
+#[event]
+pub struct OrderCancelled {
+    #[index]
+    pub betting_id: Pubkey,
+    #[index]
+    pub pool_id: Pubkey,
 }

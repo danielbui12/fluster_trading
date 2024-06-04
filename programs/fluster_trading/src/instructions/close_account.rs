@@ -1,14 +1,8 @@
-use std::borrow::Borrow;
-
-use crate::error::ErrorCode;
-use crate::states::*;
-use crate::utils::{account::*, math::to_decimals, token::*};
 use anchor_lang::prelude::*;
 use anchor_spl::{
-    token::Token,
-    token_interface::{Mint, TokenAccount},
+    token::{Token, TokenAccount},
+    token_interface::Mint,
 };
-// use pyth_sdk_solana::state::SolanaPriceAccount;
 
 #[derive(Accounts)]
 pub struct CloseAccount<'info> {
@@ -32,21 +26,20 @@ pub struct CloseAccount<'info> {
             token_mint.key().as_ref(),
         ],
         bump,
+        close = payer
     )]
-    pub token_vault: UncheckedAccount<'info>,
-    /// user token vault of spl token program
-    #[account(
-        mut,
-        constraint = user_vault.mint == token_mint.key() && user_vault.owner == payer.key(),
-    )]
-    pub user_vault: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub token_vault: Account<'info, TokenAccount>,
+
     /// Token mint, the key must smaller then token mint.
     #[account(
         mint::token_program = token_program,
     )]
     pub token_mint: Box<InterfaceAccount<'info, Mint>>,
+
     /// Program to create mint account and mint tokens
     pub token_program: Program<'info, Token>,
+
+    /// System program
     pub system_program: Program<'info, System>,
 }
 

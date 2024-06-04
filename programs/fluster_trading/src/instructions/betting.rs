@@ -1,14 +1,15 @@
 use crate::error::ErrorCode;
 use crate::states::*;
-use crate::utils::{token::*, math::from_decimals};
+use crate::utils::token::*;
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program;
+use anchor_lang::InstructionData;
 use anchor_spl::{
     token::Token,
-    token_interface::{Mint, TokenAccount}
+    token_interface::{Mint, TokenAccount},
 };
-use pyth_sdk_solana::state::SolanaPriceAccount;
-use clockwork_sdk::state::{Thread, ThreadAccount};
+use clockwork_sdk::state::Thread;
+use spl_memo::solana_program::instruction::Instruction;
 
 #[derive(Accounts)]
 #[instruction(thread_id: Vec<u8>)]
@@ -41,7 +42,7 @@ pub struct Betting<'info> {
         bump,
     )]
     pub token_account: Box<InterfaceAccount<'info, TokenAccount>>,
-    
+
     /// Token vault for the pool
     #[account(
         mut,
@@ -61,15 +62,17 @@ pub struct Betting<'info> {
         space = 8 + BettingState::INIT_SPACE,
         payer = payer,
     )]
-    user_betting: AccountLoader<'info, BettingState>,
+    pub user_betting: AccountLoader<'info, BettingState>,
+
     /// CHECK: token oracle
     #[account(
         address = pool_state.load()?.token_oracle
     )]
-    token_oracle: AccountInfo<'info>,
-    /// The mint of token
+    pub token_oracle: AccountInfo<'info>,
+
+    /// The FT mint
     #[account(
-        address = pool_state.load()?.token_mint 
+        address = crate::currency::id()
     )]
     pub token_mint: Box<InterfaceAccount<'info, Mint>>,
 
@@ -81,12 +84,10 @@ pub struct Betting<'info> {
     #[account(address = clockwork_sdk::ID)]
     pub clockwork_program: Program<'info, clockwork_sdk::ThreadProgram>,
 
-    /// The mint of token_0
-    #[account(
-        address = pool_state.load()?.token_program
-    )]    
+    /// The token program
     pub token_program: Program<'info, Token>,
 
+    /// system program
     pub system_program: Program<'info, System>,
 }
 
@@ -96,19 +97,22 @@ pub fn betting(
     trade_direction: u8,
     leverage: u8,
     amount_in: u64,
-    duration: u64,
+    destination_timestamp: i64,
 ) -> Result<()> {
     let block_timestamp = solana_program::clock::Clock::get()?.unix_timestamp;
     let pool_id = ctx.accounts.pool_state.key();
     let pool_state = &mut ctx.accounts.pool_state.load()?;
-    if !pool_state.get_status_by_bit(PoolStatusBitIndex::Bet) || pool_state.max_leverage < leverage || leverage == 0
+    if !pool_state.get_status_by_bit(PoolStatusBitIndex::Bet)
+        || pool_state.max_leverage < leverage
+        || leverage == 0
+        || destination_timestamp < block_timestamp
     {
         return err!(ErrorCode::NotApproved);
     }
     let actual_amount = amount_in.checked_div(leverage as u64).unwrap();
     require_gt!(actual_amount, 0);
 
-    let auth = [&[crate::AUTH_SEED.as_bytes(), &[pool_state.auth_bump]]];
+    let auth: &[&[&[u8]]] = &[&[crate::AUTH_SEED.as_bytes(), &[pool_state.auth_bump]]];
     transfer_token(
         ctx.accounts.authority.to_account_info(),
         ctx.accounts.token_account.to_account_info(),
@@ -118,26 +122,12 @@ pub fn betting(
         actual_amount,
         ctx.accounts.token_mint.decimals,
         true,
-        &auth,
+        auth,
     )?;
 
     let current_token_price = {
-        // invoke Pyth program to get token price
-        const STALENESS_THRESHOLD: u64 = 10; // staleness threshold in seconds
-        let price_feed = SolanaPriceAccount::account_info_to_feed(
-            &ctx.accounts.token_oracle.to_account_info()
-        ).unwrap();
-        let current_price = price_feed
-            .get_price_no_older_than(block_timestamp, STALENESS_THRESHOLD)
-            .unwrap();
-        let display_price = from_decimals(
-            u64::try_from(current_price.price).unwrap(),
-            u32::try_from(-current_price.expo).unwrap()
-        );
-        #[cfg(feature = "enable-log")]
-        msg!("current_price:{}", display_price);
-
-        u64::try_from(current_price.price).unwrap()
+        let (price, _) = get_token_price(block_timestamp, ctx.accounts.token_oracle.as_ref());
+        u64::try_from(price).unwrap()
     };
 
     let user_betting = &mut ctx.accounts.user_betting.load_init()?;
@@ -147,23 +137,31 @@ pub fn betting(
         pool_id,
         leverage,
         current_token_price,
-        (block_timestamp as u64).checked_add(duration).unwrap()
+        destination_timestamp as u64,
     );
 
     // 1️⃣ Prepare an instruction to be automated.
     let target_ix = Instruction {
-        program_id: ID,
-        accounts: crate::accounts::Increment {
-            counter: counter.key(),
-            thread: thread.key(),
-            thread_authority: thread_authority.key(),
+        program_id: crate::id(),
+        accounts: crate::accounts::Reveal {
+            payer: ctx.accounts.payer.key(),
+            authority: ctx.accounts.authority.key(),
+            pool_state: ctx.accounts.pool_state.key(),
+            token_account: ctx.accounts.token_account.key(),
+            token_vault: ctx.accounts.token_vault.key(),
+            user_betting: ctx.accounts.user_betting.key(),
+            thread: ctx.accounts.thread.key(),
+            clockwork_program: ctx.accounts.clockwork_program.key(),
+            token_oracle: ctx.accounts.token_oracle.key(),
+            token_mint: ctx.accounts.token_mint.key(),
+            token_program: ctx.accounts.token_program.key(),
+            system_program: ctx.accounts.system_program.key(),
         }
         .to_account_metas(Some(true)),
-        data: crate::instruction::Increment {}.data(),
+        data: crate::instruction::Reveal {}.data(),
     };
-
     let trigger = clockwork_sdk::state::Trigger::Timestamp {
-       unix_ts: block_timestamp.checked_add(duration as i64).unwrap(),
+        unix_ts: destination_timestamp,
     };
     clockwork_sdk::cpi::thread_create(
         CpiContext::new_with_signer(
@@ -177,7 +175,7 @@ pub fn betting(
             &auth,
         ),
         crate::CLOCK_WORK_FEE,
-        thread_id,
+        thread_id.clone(),
         vec![target_ix.into()],
         trigger,
     )?;
@@ -189,7 +187,8 @@ pub fn betting(
         trade_direction: trade_direction,
         amount_in: amount_in,
         leverage: leverage,
-        duration: duration,
+        destination_timestamp: destination_timestamp as u64,
+        thread_id
     });
 
     Ok(())

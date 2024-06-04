@@ -1,4 +1,4 @@
-use crate::error::ErrorCode;
+use crate::{error::ErrorCode, utils::from_decimals};
 use anchor_lang::prelude::*;
 use anchor_spl::{
     token::{Token, TokenAccount},
@@ -17,6 +17,8 @@ use anchor_spl::{
         InitializeAccount3, Mint,
     },
 };
+use pyth_sdk_solana::state::SolanaPriceAccount;
+use spl_memo::solana_program::clock::UnixTimestamp;
 
 pub fn transfer_token<'a>(
     authority: AccountInfo<'a>,
@@ -280,4 +282,24 @@ pub fn create_system_account<'a>(
         owner,
     )?;
     Ok(())
+}
+
+// invoke Pyth program to get token price
+pub fn get_token_price(block_timestamp: UnixTimestamp, price_account: &AccountInfo) -> (u64, u32) {
+    const STALENESS_THRESHOLD: u64 = 10; // staleness threshold in seconds
+    let price_feed = SolanaPriceAccount::account_info_to_feed(price_account).unwrap();
+    let current_price = price_feed
+        .get_price_no_older_than(block_timestamp, STALENESS_THRESHOLD)
+        .unwrap();
+    let display_price = from_decimals(
+        u64::try_from(current_price.price).unwrap(),
+        u32::try_from(-current_price.expo).unwrap(),
+    );
+    #[cfg(feature = "enable-log")]
+    msg!("current_price:{}", display_price);
+
+    (
+        u64::try_from(current_price.price).unwrap(),
+        u32::try_from(current_price.expo).unwrap(),
+    )
 }

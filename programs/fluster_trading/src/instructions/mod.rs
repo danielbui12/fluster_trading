@@ -1,20 +1,20 @@
-pub mod initialize;
-pub use initialize::*;
-
-pub mod betting;
-pub use betting::*;
-
 pub mod admin;
 pub use admin::*;
 
 pub mod deposit;
 pub use deposit::*;
 
+pub mod betting;
+pub use betting::*;
+
+pub mod reveal;
+pub use reveal::*;
+
+pub mod cancel;
+pub use cancel::*;
+
 pub mod withdraw;
 pub use withdraw::*;
-
-pub mod update_pool_config;
-pub use update_pool_config::*;
 
 pub mod close_account;
 pub use close_account::*;

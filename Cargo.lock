@@ -73,20 +73,6 @@ dependencies = [
 
 [[package]]
 name = "anchor-attribute-access-control"
-version = "0.27.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d5e1a413b311b039d29b61d0dbb401c9dbf04f792497ceca87593454bf6d7dd"
-dependencies = [
- "anchor-syn 0.27.0",
- "anyhow",
- "proc-macro2",
- "quote",
- "regex",
- "syn 1.0.109",
-]
-
-[[package]]
-name = "anchor-attribute-access-control"
 version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5f619f1d04f53621925ba8a2e633ba5a6081f2ae14758cbb67f38fd823e0a3e"
@@ -94,21 +80,6 @@ dependencies = [
  "anchor-syn 0.29.0",
  "proc-macro2",
  "quote",
- "syn 1.0.109",
-]
-
-[[package]]
-name = "anchor-attribute-account"
-version = "0.27.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cca9aeaf633c6e2365fed0525dcac68610be58eee5dc69d3b86fe0b1d4b320b9"
-dependencies = [
- "anchor-syn 0.27.0",
- "anyhow",
- "bs58 0.4.0",
- "proc-macro2",
- "quote",
- "rustversion",
  "syn 1.0.109",
 ]
 
@@ -127,17 +98,6 @@ dependencies = [
 
 [[package]]
 name = "anchor-attribute-constant"
-version = "0.27.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "788e44f9e8501dabeb6f9229da0f3268fb2ae3208912608ffaa056a72031296f"
-dependencies = [
- "anchor-syn 0.27.0",
- "proc-macro2",
- "syn 1.0.109",
-]
-
-[[package]]
-name = "anchor-attribute-constant"
 version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9423945cb55627f0b30903288e78baf6f62c6c8ab28fb344b6b25f1ffee3dca7"
@@ -149,36 +109,11 @@ dependencies = [
 
 [[package]]
 name = "anchor-attribute-error"
-version = "0.27.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea0c4d8c7e4a2605ede6fcdced9690288b2f74e24768619a85229d57e597bc97"
-dependencies = [
- "anchor-syn 0.27.0",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
-name = "anchor-attribute-error"
 version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "93ed12720033cc3c3bf3cfa293349c2275cd5ab99936e33dd4bf283aaad3e241"
 dependencies = [
  "anchor-syn 0.29.0",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
-name = "anchor-attribute-event"
-version = "0.27.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a3b07d5c5d87b5edc72428b447b8e9ee1143b83dd1afc6a6b1d352c6a6164d8"
-dependencies = [
- "anchor-syn 0.27.0",
- "anyhow",
- "proc-macro2",
  "quote",
  "syn 1.0.109",
 ]
@@ -197,37 +132,11 @@ dependencies = [
 
 [[package]]
 name = "anchor-attribute-program"
-version = "0.27.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b22ad0445115dbea5869b1d062da49ae125abed9132fc20c33227f25e42dfa6b"
-dependencies = [
- "anchor-syn 0.27.0",
- "anyhow",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
-name = "anchor-attribute-program"
 version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b18c4f191331e078d4a6a080954d1576241c29c56638783322a18d308ab27e4f"
 dependencies = [
  "anchor-syn 0.29.0",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
-name = "anchor-derive-accounts"
-version = "0.27.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "48daeff6781ba2f02961b0ad211feb9a2de75af345d42c62b1a252fd4dfb0724"
-dependencies = [
- "anchor-syn 0.27.0",
- "anyhow",
- "proc-macro2",
  "quote",
  "syn 1.0.109",
 ]
@@ -258,17 +167,6 @@ dependencies = [
 
 [[package]]
 name = "anchor-derive-space"
-version = "0.27.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c4fe2886f92c4f33ec1b2b8b2b43ca1b9070cf4929e63c7eaaa09a9f2c0d5123"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
-name = "anchor-derive-space"
 version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ecc31d19fa54840e74b7a979d44bcea49d70459de846088a1d71e87ba53c419"
@@ -280,42 +178,19 @@ dependencies = [
 
 [[package]]
 name = "anchor-lang"
-version = "0.27.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dbbe5d1c7c057c6d63b4f2f538a320e4a22111126c9966340c3d9490e2f15ed1"
-dependencies = [
- "anchor-attribute-access-control 0.27.0",
- "anchor-attribute-account 0.27.0",
- "anchor-attribute-constant 0.27.0",
- "anchor-attribute-error 0.27.0",
- "anchor-attribute-event 0.27.0",
- "anchor-attribute-program 0.27.0",
- "anchor-derive-accounts 0.27.0",
- "anchor-derive-space 0.27.0",
- "arrayref",
- "base64 0.13.1",
- "bincode",
- "borsh 0.9.3",
- "bytemuck",
- "solana-program",
- "thiserror",
-]
-
-[[package]]
-name = "anchor-lang"
 version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "35da4785497388af0553586d55ebdc08054a8b1724720ef2749d313494f2b8ad"
 dependencies = [
- "anchor-attribute-access-control 0.29.0",
- "anchor-attribute-account 0.29.0",
- "anchor-attribute-constant 0.29.0",
- "anchor-attribute-error 0.29.0",
- "anchor-attribute-event 0.29.0",
- "anchor-attribute-program 0.29.0",
- "anchor-derive-accounts 0.29.0",
+ "anchor-attribute-access-control",
+ "anchor-attribute-account",
+ "anchor-attribute-constant",
+ "anchor-attribute-error",
+ "anchor-attribute-event",
+ "anchor-attribute-program",
+ "anchor-derive-accounts",
  "anchor-derive-serde",
- "anchor-derive-space 0.29.0",
+ "anchor-derive-space",
  "arrayref",
  "base64 0.13.1",
  "bincode",
@@ -332,7 +207,7 @@ version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6c4fd6e43b2ca6220d2ef1641539e678bfc31b6cc393cf892b373b5997b6a39a"
 dependencies = [
- "anchor-lang 0.29.0",
+ "anchor-lang",
  "mpl-token-metadata",
  "solana-program",
  "spl-associated-token-account 2.2.0",
@@ -878,8 +753,7 @@ dependencies = [
 [[package]]
 name = "clockwork-cron"
 version = "2.0.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ce12678d0b72ace1c5a4aab8b1cb4e1166fa4fcc1db232598afbad1b7999d22"
+source = "git+https://github.com/danielbui12/clockwork#e8819f4628d72cf8f1fc8bb4942630071dafcf6c"
 dependencies = [
  "chrono",
  "nom",
@@ -889,10 +763,9 @@ dependencies = [
 [[package]]
 name = "clockwork-network-program"
 version = "2.0.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c7f48a1a4cb3f201f31211aca963f94b87c36992f9bb84a1b7d7490675ff28c3"
+source = "git+https://github.com/danielbui12/clockwork#e8819f4628d72cf8f1fc8bb4942630071dafcf6c"
 dependencies = [
- "anchor-lang 0.29.0",
+ "anchor-lang",
  "anchor-spl",
  "clockwork-utils",
  "toml_datetime",
@@ -902,10 +775,9 @@ dependencies = [
 [[package]]
 name = "clockwork-sdk"
 version = "2.0.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e69d84ad8394beab086322f407739b62858d89b7e54f0e9a5bb83de341bb400"
+source = "git+https://github.com/danielbui12/clockwork#e8819f4628d72cf8f1fc8bb4942630071dafcf6c"
 dependencies = [
- "anchor-lang 0.29.0",
+ "anchor-lang",
  "chrono",
  "clockwork-thread-program",
  "nom",
@@ -915,10 +787,9 @@ dependencies = [
 [[package]]
 name = "clockwork-thread-program"
 version = "2.0.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f5c1578743a74f08c7f8f8fdad300b2ce19ef0b0fd2cb891a27cc0139405727"
+source = "git+https://github.com/danielbui12/clockwork#e8819f4628d72cf8f1fc8bb4942630071dafcf6c"
 dependencies = [
- "anchor-lang 0.29.0",
+ "anchor-lang",
  "chrono",
  "clockwork-cron",
  "clockwork-network-program",
@@ -931,21 +802,19 @@ dependencies = [
 
 [[package]]
 name = "clockwork-thread-program-v1"
-version = "1.4.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c5bf9f9dbfc33c25a91403d98db88e7a06cd8a7898c33960848565d0e4a7f196"
+version = "1.4.5"
+source = "git+https://github.com/danielbui12/clockwork#e8819f4628d72cf8f1fc8bb4942630071dafcf6c"
 dependencies = [
- "anchor-lang 0.27.0",
+ "anchor-lang",
  "clockwork-anchor-gen",
 ]
 
 [[package]]
 name = "clockwork-utils"
 version = "2.0.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60ce7994c377e0b2469dd14284ff2ee9a8839aac3185d175e889effa2c7b49dd"
+source = "git+https://github.com/danielbui12/clockwork#e8819f4628d72cf8f1fc8bb4942630071dafcf6c"
 dependencies = [
- "anchor-lang 0.29.0",
+ "anchor-lang",
  "base64 0.13.1",
  "serde",
  "serde_json",
@@ -1264,7 +1133,7 @@ checksum = "835a3dc7d1ec9e75e2b5fb4ba75396837112d2060b03f7d43bc1897c7f7211da"
 name = "fluster_trading"
 version = "0.1.0"
 dependencies = [
- "anchor-lang 0.29.0",
+ "anchor-lang",
  "anchor-spl",
  "clockwork-sdk",
  "proptest",
@@ -2064,7 +1933,7 @@ dependencies = [
 name = "raydium-amm-anchor"
 version = "0.1.0"
 dependencies = [
- "anchor-lang 0.29.0",
+ "anchor-lang",
  "anchor-spl",
  "raydium-contract-instructions",
 ]

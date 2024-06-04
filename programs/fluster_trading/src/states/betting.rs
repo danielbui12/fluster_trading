@@ -38,5 +38,6 @@ impl BettingState {
         self.leverage = leverage;
         self.current_price = current_price;
         self.destination_timestamp = destination_timestamp;
+        self.result_price = 0;
     }
 }

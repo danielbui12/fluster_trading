@@ -107,18 +107,15 @@ pub fn initialize(
 
     pool_state.initialize(
         ctx.bumps.authority,
-        ctx.bumps.token_vault,
         max_leverage,
         protocol_fee_rate,
         ctx.accounts.token_vault.key(),
         ctx.accounts.token_oracle.key(),
-        &ctx.accounts.token_mint,
     );
 
     emit!(PoolInitialized {
         pool_id: ctx.accounts.pool_state.key(),
         max_leverage: max_leverage,
-        token_mint: ctx.accounts.token_mint.key(),
         token_oracle: ctx.accounts.token_oracle.key(),
     });
 

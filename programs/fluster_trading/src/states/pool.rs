@@ -20,20 +20,12 @@ pub enum PoolStatusBitFlag {
 #[repr(packed)]
 #[derive(Default, Debug, InitSpace)]
 pub struct PoolState {
-    /// Which config the vault belongs
-    pub vault_bump: u8,
     /// Token oracle account
     pub token_oracle: Pubkey,
     /// Token
     pub token_vault: Pubkey,
-    /// Mint information for token
-    pub token_mint: Pubkey,
-    /// mint decimals
-    pub mint_decimals: u8,
     /// max leverage allowed
     pub max_leverage: u8,
-    /// token program to support both spl token & token 2022 extensions
-    pub token_program: Pubkey,
     /// main authority bump
     pub auth_bump: u8,
     /// Bitwise representation of the state of the pool
@@ -51,19 +43,13 @@ impl PoolState {
     pub fn initialize(
         &mut self,
         auth_bump: u8,
-        vault_bump: u8,
         max_leverage: u8,
         protocol_fee_rate: u16,
         token_vault: Pubkey,
         token_oracle: Pubkey,
-        token_mint: &InterfaceAccount<Mint>,
     ) {
         self.token_vault = token_vault;
-        self.token_mint = token_mint.key();
-        self.token_program = *token_mint.to_account_info().owner;
         self.auth_bump = auth_bump;
-        self.vault_bump = vault_bump;
-        self.mint_decimals = token_mint.decimals;
         self.token_oracle = token_oracle;
         self.max_leverage = max_leverage;
         self.protocol_fee_rate = protocol_fee_rate;
