@@ -1,5 +1,4 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token_interface::Mint;
 use std::ops::{BitAnd, BitOr, BitXor};
 /// Seed to derive account address and signature
 pub const POOL_SEED: &str = "pool";
@@ -24,8 +23,6 @@ pub struct PoolState {
     pub token_oracle: Pubkey,
     /// Token
     pub token_vault: Pubkey,
-    /// max leverage allowed
-    pub max_leverage: u8,
     /// main authority bump
     pub auth_bump: u8,
     /// Bitwise representation of the state of the pool
@@ -33,8 +30,10 @@ pub struct PoolState {
     /// bit1, 1: disable withdraw(value is 2), 0: normal
     /// bit2, 1: disable swap(value is 4), 0: normal
     pub status: u8,
-    /// The protocol fee. DENUMERATOR: 10_000 aka 100%
+    /// The protocol fee. DENOMINATOR: 10_000 aka 100%
     pub protocol_fee_rate: u16,
+    /// The trading fee. DENOMINATOR: 10_000 aka 100%
+    pub trading_fee_rate: u16,
     /// padding for future updates
     pub padding: [u64; 32],
 }
@@ -43,7 +42,7 @@ impl PoolState {
     pub fn initialize(
         &mut self,
         auth_bump: u8,
-        max_leverage: u8,
+        trading_fee_rate: u16,
         protocol_fee_rate: u16,
         token_vault: Pubkey,
         token_oracle: Pubkey,
@@ -51,7 +50,7 @@ impl PoolState {
         self.token_vault = token_vault;
         self.auth_bump = auth_bump;
         self.token_oracle = token_oracle;
-        self.max_leverage = max_leverage;
+        self.trading_fee_rate = trading_fee_rate;
         self.protocol_fee_rate = protocol_fee_rate;
     }
 

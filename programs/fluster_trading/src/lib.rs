@@ -63,14 +63,15 @@ pub mod fluster_trading {
     /// # Arguments
     ///
     /// * `ctx`- The context of accounts
-    /// * `max_leverage` - the maximum leverage allowed
+    /// * `trading_fee_rate` - the trading fee rate
+    /// * `protocol_fee_rate` - the protocol fee rate
     ///
     pub fn initialize(
         ctx: Context<Initialize>,
-        max_leverage: u8,
+        trading_fee_rate: u16,
         protocol_fee_rate: u16,
     ) -> Result<()> {
-        instructions::initialize(ctx, max_leverage, protocol_fee_rate)
+        instructions::initialize(ctx, trading_fee_rate, protocol_fee_rate)
     }
 
     /// Update pool state
@@ -79,11 +80,23 @@ pub mod fluster_trading {
     /// # Arguments
     ///
     /// * `ctx`- The context of accounts
-    /// * `param`- The value can be 0, otherwise will report a error
+    /// * `param`- The value can be 0 | 1, otherwise will report a error
     /// * `value`- The value of the equivalent field
     ///
     pub fn update_pool_state(ctx: Context<UpdatePoolState>, param: u8, value: u64) -> Result<()> {
         instructions::update_pool_state(ctx, param, value)
+    }
+
+    /// Collect fees
+    /// Must be called by the current admin
+    ///
+    /// # Arguments
+    ///
+    /// * `ctx` - The context of accounts
+    /// * `amount_requested` - Amount to collect
+    ///
+    pub fn collect_fee(ctx: Context<CollectFee>, amount_requested: u64) -> Result<()> {
+        instructions::collect_fee(ctx, amount_requested)
     }
 
     /// User deposits token to vault
@@ -129,18 +142,18 @@ pub mod fluster_trading {
     pub fn betting(
         ctx: Context<Betting>,
         thread_id: Vec<u8>,
-        trade_direction: u8,
-        leverage: u8,
         amount: u64,
+        price_slippage: u64,
         destination_timestamp: i64,
+        trade_direction: u8,
     ) -> Result<()> {
         instructions::betting(
             ctx,
             thread_id,
-            trade_direction,
-            leverage,
             amount,
+            price_slippage,
             destination_timestamp,
+            trade_direction,
         )
     }
 
@@ -170,7 +183,7 @@ pub mod fluster_trading {
     ///
     /// * `ctx`- The context of accounts
     ///
-    pub fn complete(ctx: Context<Betting>) -> Result<()> {
-        Ok(())
+    pub fn complete(ctx: Context<Complete>) -> Result<()> {
+        instructions::complete(ctx)
     }
 }

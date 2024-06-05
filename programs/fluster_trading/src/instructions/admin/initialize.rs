@@ -13,7 +13,7 @@ use anchor_spl::{
 #[derive(Accounts)]
 pub struct Initialize<'info> {
     /// Address paying to create the pool. Can be anyone
-    #[account(mut)]
+    #[account(mut, constraint = payer.key() == crate::admin::id() @ ErrorCode::InvalidOwner)]
     pub payer: Signer<'info>,
 
     /// CHECK: pool vault and token mint authority
@@ -42,7 +42,7 @@ pub struct Initialize<'info> {
     #[account(mut)]
     pub token_oracle: UncheckedAccount<'info>,
 
-    /// Token mint, the key must smaller then token mint.
+    /// Token mint
     #[account(
         mint::token_program = token_program,
     )]
@@ -71,7 +71,7 @@ pub struct Initialize<'info> {
 
 pub fn initialize(
     ctx: Context<Initialize>,
-    max_leverage: u8,
+    trading_fee_rate: u16,
     protocol_fee_rate: u16,
 ) -> Result<()> {
     if !is_supported_mint(&ctx.accounts.token_mint).unwrap() {
@@ -107,7 +107,7 @@ pub fn initialize(
 
     pool_state.initialize(
         ctx.bumps.authority,
-        max_leverage,
+        trading_fee_rate,
         protocol_fee_rate,
         ctx.accounts.token_vault.key(),
         ctx.accounts.token_oracle.key(),
@@ -115,7 +115,6 @@ pub fn initialize(
 
     emit!(PoolInitialized {
         pool_id: ctx.accounts.pool_state.key(),
-        max_leverage: max_leverage,
         token_oracle: ctx.accounts.token_oracle.key(),
     });
 

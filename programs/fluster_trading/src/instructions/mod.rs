@@ -13,6 +13,9 @@ pub use reveal::*;
 pub mod cancel;
 pub use cancel::*;
 
+pub mod complete;
+pub use complete::*;
+
 pub mod withdraw;
 pub use withdraw::*;
 

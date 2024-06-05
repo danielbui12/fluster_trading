@@ -5,8 +5,6 @@ use anchor_lang::prelude::*;
 pub struct PoolInitialized {
     #[index]
     pub pool_id: Pubkey,
-    /// max leverage
-    pub max_leverage: u8,
     /// token oracle
     pub token_oracle: Pubkey,
 }
@@ -24,8 +22,6 @@ pub struct OrderPlaced {
     pub amount_in: u64,
     /// trade direction
     pub trade_direction: u8,
-    /// leverage
-    pub leverage: u8,
     /// destination timestamp
     pub destination_timestamp: u64,
     /// thread id
@@ -46,6 +42,15 @@ pub struct OrderFulfilled {
 /// Emitted when cancel an betting order
 #[event]
 pub struct OrderCancelled {
+    #[index]
+    pub betting_id: Pubkey,
+    #[index]
+    pub pool_id: Pubkey,
+}
+
+/// Emitted when cancel an betting order
+#[event]
+pub struct OrderCompleted {
     #[index]
     pub betting_id: Pubkey,
     #[index]

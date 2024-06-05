@@ -10,7 +10,6 @@ use anchor_spl::{
 use clockwork_sdk::state::Thread;
 
 #[derive(Accounts)]
-#[instruction(thread_id: Vec<u8>)]
 pub struct Reveal<'info> {
     /// The user performing the trading
     #[account(mut)]
@@ -51,7 +50,7 @@ pub struct Reveal<'info> {
     /// betting state
     #[account(
         mut,
-        constraint = user_betting.load()?.pool_state == pool_state.key()
+        constraint = user_betting.load()?.pool_state == pool_state.key() && user_betting.load()?.owner == payer.key()
     )]
     pub user_betting: AccountLoader<'info, BettingState>,
 

@@ -1,3 +1,4 @@
+use crate::curve::TradeDirection;
 use crate::error::ErrorCode;
 use crate::states::*;
 use crate::utils::token::*;
@@ -94,23 +95,33 @@ pub struct Betting<'info> {
 pub fn betting(
     ctx: Context<Betting>,
     thread_id: Vec<u8>,
-    trade_direction: u8,
-    leverage: u8,
     amount_in: u64,
+    price_slippage: u64,
     destination_timestamp: i64,
+    trade_direction: u8,
 ) -> Result<()> {
     let block_timestamp = solana_program::clock::Clock::get()?.unix_timestamp;
     let pool_id = ctx.accounts.pool_state.key();
     let pool_state = &mut ctx.accounts.pool_state.load()?;
     if !pool_state.get_status_by_bit(PoolStatusBitIndex::Bet)
-        || pool_state.max_leverage < leverage
-        || leverage == 0
         || destination_timestamp < block_timestamp
+        || ctx.bumps.authority != pool_state.auth_bump
     {
         return err!(ErrorCode::NotApproved);
     }
-    let actual_amount = amount_in.checked_div(leverage as u64).unwrap();
-    require_gt!(actual_amount, 0);
+    let actual_amount = amount_in;
+    require_gt!(actual_amount, 0, ErrorCode::InvalidAmount);
+
+    let current_token_price = {
+        let (price, _) = get_token_price(block_timestamp, ctx.accounts.token_oracle.as_ref());
+        u64::try_from(price).unwrap()
+    };
+
+    if TradeDirection::Up.compare_u8(trade_direction) && current_token_price > price_slippage
+        || TradeDirection::Down.compare_u8(trade_direction) && current_token_price < price_slippage
+    {
+        return err!(ErrorCode::ExceededSlippage);
+    }
 
     let auth: &[&[&[u8]]] = &[&[crate::AUTH_SEED.as_bytes(), &[pool_state.auth_bump]]];
     transfer_token(
@@ -125,17 +136,12 @@ pub fn betting(
         auth,
     )?;
 
-    let current_token_price = {
-        let (price, _) = get_token_price(block_timestamp, ctx.accounts.token_oracle.as_ref());
-        u64::try_from(price).unwrap()
-    };
-
     let user_betting = &mut ctx.accounts.user_betting.load_init()?;
     user_betting.initialize(
+        pool_id,
+        ctx.accounts.payer.key(),
         trade_direction,
         amount_in,
-        pool_id,
-        leverage,
         current_token_price,
         destination_timestamp as u64,
     );
@@ -186,7 +192,6 @@ pub fn betting(
         token_vault_before: ctx.accounts.token_vault.amount,
         trade_direction: trade_direction,
         amount_in: amount_in,
-        leverage: leverage,
         destination_timestamp: destination_timestamp as u64,
         thread_id
     });
