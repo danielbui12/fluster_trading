@@ -11,10 +11,10 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-fluster_trading = "HdNeVJt9x8p5G5Q99A3PySR4bNnzaLzHdSAw5B5eWZzC"
+fluster_trading = "4AHGtdLDrWNPfVaDZD5N8JD2CPFRAZnKdPHtaEohfg9W"
 
 [programs.devnet]
-fluster_trading = "HdNeVJt9x8p5G5Q99A3PySR4bNnzaLzHdSAw5B5eWZzC"
+fluster_trading = "4AHGtdLDrWNPfVaDZD5N8JD2CPFRAZnKdPHtaEohfg9W"
 
 
 [registry]
@@ -26,7 +26,7 @@ wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/pyth_oracle_get_price.test.ts"
-exec = "yarn ts-node -r tsconfig-paths/register clients/swap.ts"
+exec = "yarn ts-node -r tsconfig-paths/register clients/**/*.ts"
 
 [test]
 startup_wait = 10000

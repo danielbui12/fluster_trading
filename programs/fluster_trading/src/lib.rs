@@ -22,9 +22,9 @@ security_txt! {
 }
 
 #[cfg(feature = "devnet")]
-declare_id!("HdNeVJt9x8p5G5Q99A3PySR4bNnzaLzHdSAw5B5eWZzC");
+declare_id!("4AHGtdLDrWNPfVaDZD5N8JD2CPFRAZnKdPHtaEohfg9W");
 #[cfg(not(feature = "devnet"))]
-declare_id!("HdNeVJt9x8p5G5Q99A3PySR4bNnzaLzHdSAw5B5eWZzC");
+declare_id!("4AHGtdLDrWNPfVaDZD5N8JD2CPFRAZnKdPHtaEohfg9W");
 
 pub mod admin {
     use anchor_lang::prelude::declare_id;

@@ -1,4 +1,4 @@
-# FLUSTER SWAP.
+# FLUSTER TRADING.
 
 ## Environment Setup
 
@@ -12,6 +12,6 @@ Clone the repository and test the program.
 
 ```shell
 
-git clone https://github.com/danielbui12/fluster_swap
-cd fluster_swap && anchor test
+git clone https://github.com/danielbui12/fluster_trading
+cd fluster_trading && anchor test
 ```
