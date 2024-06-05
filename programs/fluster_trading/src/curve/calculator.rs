@@ -67,14 +67,10 @@ pub enum RoundDirection {
 /// Encodes all results of trading from a source token to a destination token
 #[derive(Debug, PartialEq)]
 pub struct TradeResult {
-    /// Amount of tokens going to protocol
-    pub protocol_fee: u128,
     /// Amount of profit
     pub profit_amount: u128,
     /// Amount of trading fee
     pub trading_fee: u128,
-    /// Amount without fee
-    pub without_fee_amount: u128,
 }
 
 /// Concrete struct to wrap around the trait object which performs calculation.
@@ -84,22 +80,14 @@ pub struct Calculator {}
 impl Calculator {
     /// Subtract fees and calculate how much the profit is
     /// by default destination is gte than source
-    pub fn calculate_position(
-        bet_amount: u128,
-        protocol_fee_rate: u64,
-        trading_fee_rate: u64,
-    ) -> Option<TradeResult> {
+    pub fn calculate_position(bet_amount: u128, trading_fee_rate: u64) -> Option<TradeResult> {
         // debit the fee to calculate the amount swapped
         let trading_fee = Fees::trading_fee(bet_amount, trading_fee_rate)?;
         let profit_amount = bet_amount.checked_sub(trading_fee).unwrap();
-        let protocol_fee = Fees::protocol_fee(profit_amount, protocol_fee_rate)?;
-        let without_fee_amount = bet_amount.checked_sub(protocol_fee).unwrap();
 
         Some(TradeResult {
-            protocol_fee,
             profit_amount,
             trading_fee,
-            without_fee_amount,
         })
     }
 }

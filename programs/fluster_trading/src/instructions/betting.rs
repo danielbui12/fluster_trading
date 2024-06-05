@@ -1,4 +1,4 @@
-use crate::curve::TradeDirection;
+use crate::curve::{Fees, TradeDirection};
 use crate::error::ErrorCode;
 use crate::states::*;
 use crate::utils::token::*;
@@ -109,8 +109,12 @@ pub fn betting(
     {
         return err!(ErrorCode::NotApproved);
     }
-    let actual_amount = amount_in;
-    require_gt!(actual_amount, 0, ErrorCode::InvalidAmount);
+    require_gt!(amount_in, 0, ErrorCode::InvalidAmount);
+    let protocol_fee =
+        Fees::protocol_fee(amount_in.into(), pool_state.protocol_fee_rate.into()).unwrap();
+    let actual_amount = amount_in
+        .checked_add(u64::try_from(protocol_fee).unwrap())
+        .unwrap();
 
     let current_token_price = {
         let (price, _) = get_token_price(block_timestamp, ctx.accounts.token_oracle.as_ref());

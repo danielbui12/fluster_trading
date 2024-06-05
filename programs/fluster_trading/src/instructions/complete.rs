@@ -75,7 +75,6 @@ pub fn complete(ctx: Context<Complete>) -> Result<()> {
         let trade_result = Calculator::calculate_position(
             user_betting.bet_amount.into(),
             pool_state.protocol_fee_rate.into(),
-            pool_state.trading_fee_rate.into(),
         )
         .ok_or(ErrorCode::FailedPositionCalculation)?;
 
@@ -85,33 +84,29 @@ pub fn complete(ctx: Context<Complete>) -> Result<()> {
                 && TradeDirection::Down.compare(user_betting.trade_direction));
 
         let transfer_amount = if is_user_win {
-            trade_result
-                .without_fee_amount
+            (user_betting.bet_amount as u128)
                 .checked_add(trade_result.profit_amount)
                 .unwrap()
         } else {
-            trade_result
-                .without_fee_amount
-                .checked_sub(trade_result.profit_amount)
-                .unwrap()
+            0u128
         };
         u64::try_from(transfer_amount).unwrap()
     };
 
     // transfer token back to user
-    let auth: &[&[&[u8]]] = &[&[crate::AUTH_SEED.as_bytes(), &[pool_state.auth_bump]]];
-
-    transfer_token(
-        ctx.accounts.authority.to_account_info(),
-        ctx.accounts.user_account.to_account_info(),
-        ctx.accounts.token_vault.to_account_info(),
-        ctx.accounts.token_mint.to_account_info(),
-        ctx.accounts.token_program.to_account_info(),
-        actual_transfer_amount,
-        ctx.accounts.token_mint.decimals,
-        false,
-        auth,
-    )?;
+    if actual_transfer_amount > 0 {
+        transfer_token(
+            ctx.accounts.authority.to_account_info(),
+            ctx.accounts.user_account.to_account_info(),
+            ctx.accounts.token_vault.to_account_info(),
+            ctx.accounts.token_mint.to_account_info(),
+            ctx.accounts.token_program.to_account_info(),
+            actual_transfer_amount,
+            ctx.accounts.token_mint.decimals,
+            false,
+            &[&[crate::AUTH_SEED.as_bytes(), &[pool_state.auth_bump]]],
+        )?;
+    }
 
     // close betting
     close_account(

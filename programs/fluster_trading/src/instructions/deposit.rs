@@ -67,7 +67,7 @@ pub struct Deposit<'info> {
     pub user_token_program: Program<'info, Token>,
     /// Program to create mint account and mint tokens
     pub destination_token_program: Program<'info, Token>,
-    /// Pyth price feed acconut of user token mint
+    /// CHECK: Pyth price feed account of user token mint
     pub token_oracle: UncheckedAccount<'info>,
     /// payer
     #[account(mut)]
