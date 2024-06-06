@@ -11,9 +11,12 @@
 Clone the repository and test the program.
 
 ```shell
-
 git clone https://github.com/danielbui12/fluster_trading
-cd fluster_trading && anchor test
+cd fluster_trading
+yarn install
+cargo install -f --locked --git https://github.com/danielbui12/clockwork clockwork-cli
+yarn setup
+yarn test test
 ```
 
 ## Fork program on mainnet
