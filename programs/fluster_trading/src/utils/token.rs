@@ -34,30 +34,18 @@ pub fn transfer_token<'a>(
     if amount == 0 {
         return Ok(());
     }
-
-    if is_from_user {
-        anchor_spl::token::transfer_checked(
-            CpiContext::new(
-                token_program.to_account_info(),
-                anchor_spl::token::TransferChecked {
-                    from: user.to_account_info(),
-                    to: vault.to_account_info(),
-                    authority: authority.to_account_info(),
-                    mint: mint.to_account_info(),
-                },
-            ),
-            amount,
-            mint_decimals,
-        )?;
-        return Ok(());
-    }
+    let (from, to) = if is_from_user {
+        (user, vault)
+    } else {
+        (vault, user)
+    };
 
     anchor_spl::token::transfer_checked(
         CpiContext::new_with_signer(
             token_program.to_account_info(),
             anchor_spl::token::TransferChecked {
-                from: vault.to_account_info(),
-                to: user.to_account_info(),
+                from: from.to_account_info(),
+                to: to.to_account_info(),
                 authority: authority.to_account_info(),
                 mint: mint.to_account_info(),
             },
@@ -80,29 +68,17 @@ pub fn transfer_native_token<'a>(
     if amount == 0 {
         return Ok(());
     }
+    let (from, to) = if is_from_user {
+        (user, vault)
+    } else {
+        (vault, user)
+    };
 
-    if is_from_user {
-        let ix = anchor_lang::solana_program::system_instruction::transfer(
-            &user.key(),
-            &vault.key(),
-            amount,
-        );
-        anchor_lang::solana_program::program::invoke_signed(
-            &ix,
-            &[user, vault, system_program],
-            &[],
-        )?;
-        return Ok(());
-    }
-
-    let ix = anchor_lang::solana_program::system_instruction::transfer(
-        &vault.key(),
-        &user.key(),
-        amount,
-    );
+    let ix =
+        anchor_lang::solana_program::system_instruction::transfer(&from.key(), &to.key(), amount);
     anchor_lang::solana_program::program::invoke_signed(
         &ix,
-        &[vault, user, system_program],
+        &[from, to, system_program],
         signer_seeds,
     )?;
     return Ok(());
@@ -243,22 +219,22 @@ pub fn create_system_account<'a>(
 pub fn get_token_price(block_timestamp: UnixTimestamp, price_account: &AccountInfo) -> (u64, u32) {
     const STALENESS_THRESHOLD: u64 = 300; // staleness threshold in seconds, 5 minutes
     let price_feed = SolanaPriceAccount::account_info_to_feed(price_account).unwrap();
-    let current_price = price_feed
+    let position_price = price_feed
         .get_price_no_older_than(block_timestamp, STALENESS_THRESHOLD)
         .unwrap();
     let display_price = from_decimals(
-        u64::try_from(current_price.price).unwrap(),
-        u32::try_from(-current_price.expo).unwrap(),
+        u64::try_from(position_price.price).unwrap(),
+        u32::try_from(-position_price.expo).unwrap(),
     );
     #[cfg(feature = "enable-log")]
     msg!(
-        "current_price: {} at {}",
+        "position_price: {} at {}",
         display_price,
-        current_price.publish_time
+        position_price.publish_time
     );
 
     (
-        u64::try_from(current_price.price).unwrap(),
-        u32::try_from(-current_price.expo).unwrap(),
+        u64::try_from(position_price.price).unwrap(),
+        u32::try_from(-position_price.expo).unwrap(),
     )
 }

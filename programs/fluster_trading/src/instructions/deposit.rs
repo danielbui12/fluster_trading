@@ -2,7 +2,6 @@ use crate::utils::to_decimals;
 use crate::utils::{create_token_account, get_token_price, token::transfer_token};
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program;
-use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::{
     token::Token,
     token_interface::{Mint, TokenAccount},
@@ -73,9 +72,6 @@ pub struct Deposit<'info> {
 
     /// CHECK: Pyth price feed account of user token mint
     pub token_oracle: UncheckedAccount<'info>,
-
-    /// Program to create an ATA
-    pub associated_token_program: Program<'info, AssociatedToken>,
 
     /// payer
     #[account(mut)]

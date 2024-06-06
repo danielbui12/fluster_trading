@@ -158,6 +158,7 @@ pub mod fluster_trading {
     }
 
     /// Reveal the order after the deadline
+    /// Only thread can triggers this
     ///
     /// # Arguments
     ///
@@ -185,5 +186,15 @@ pub mod fluster_trading {
     ///
     pub fn complete(ctx: Context<Complete>) -> Result<()> {
         instructions::complete(ctx)
+    }
+
+    /// Close the betting after revealed
+    ///
+    /// # Arguments
+    ///
+    /// * `ctx`- The context of accounts
+    ///
+    pub fn close_betting(ctx: Context<CloseBetting>) -> Result<()> {
+        instructions::close_betting(ctx)
     }
 }

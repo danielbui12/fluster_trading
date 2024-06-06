@@ -1,5 +1,7 @@
 {
     "scripts": {
+        "setup": "bash bin/setup.sh",
+        "test": "anchor test --skip-local-validator",
         "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
         "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
     },

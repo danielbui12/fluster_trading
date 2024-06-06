@@ -1,7 +1,7 @@
 use crate::curve::{Calculator, TradeDirection};
 use crate::error::ErrorCode;
 use crate::states::*;
-use crate::utils::close_account;
+// use crate::utils::close_account;
 use crate::utils::transfer_token;
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program;
@@ -9,12 +9,17 @@ use anchor_spl::{
     token::Token,
     token_interface::{Mint, TokenAccount},
 };
+use clockwork_sdk::state::Thread;
 
 #[derive(Accounts)]
 pub struct Complete<'info> {
-    /// The user performing the trading
+    /// Payer
     #[account(mut)]
     pub payer: Signer<'info>,
+
+    /// The user performing the trading
+    #[account(mut, address = user_betting.load()?.owner)]
+    pub owner: SystemAccount<'info>,
 
     /// CHECK: authority
     #[account(
@@ -30,7 +35,7 @@ pub struct Complete<'info> {
     pub pool_state: AccountLoader<'info, PoolState>,
 
     /// The user token account for FT mint
-    #[account(mut, constraint = user_account.mint == token_mint.key() && user_account.owner == user_betting.load()?.owner)]
+    #[account(mut, constraint = user_account.mint == token_mint.key())]
     pub user_account: Box<InterfaceAccount<'info, TokenAccount>>,
 
     /// Token vault for the pool
@@ -53,6 +58,14 @@ pub struct Complete<'info> {
     )]
     pub token_mint: Box<InterfaceAccount<'info, Mint>>,
 
+    /// The thread to reset.
+    #[account(mut, address = user_betting.load()?.thread)]
+    pub thread: Account<'info, Thread>,
+
+    /// The Clockwork thread program.
+    #[account(address = clockwork_sdk::ID)]
+    pub clockwork_program: Program<'info, clockwork_sdk::ThreadProgram>,
+
     /// The token program
     pub token_program: Program<'info, Token>,
 
@@ -64,7 +77,7 @@ pub fn complete(ctx: Context<Complete>) -> Result<()> {
     let block_timestamp = solana_program::clock::Clock::get()?.unix_timestamp;
     let pool_id = ctx.accounts.pool_state.key();
     let pool_state = ctx.accounts.pool_state.load()?;
-    let user_betting = &mut ctx.accounts.user_betting.load_mut()?;
+    let user_betting = &mut ctx.accounts.user_betting.load()?;
 
     // check if timestamp is not passed and result_price is 0
     if user_betting.destination_timestamp > (block_timestamp as u64)
@@ -81,9 +94,9 @@ pub fn complete(ctx: Context<Complete>) -> Result<()> {
         )
         .ok_or(ErrorCode::FailedPositionCalculation)?;
 
-        let is_user_win = (user_betting.current_price <= user_betting.result_price
+        let is_user_win = (user_betting.position_price < user_betting.result_price
             && TradeDirection::Up.compare(user_betting.trade_direction))
-            || (user_betting.current_price >= user_betting.result_price
+            || (user_betting.position_price > user_betting.result_price
                 && TradeDirection::Down.compare(user_betting.trade_direction));
 
         let transfer_amount = if is_user_win {
@@ -111,11 +124,22 @@ pub fn complete(ctx: Context<Complete>) -> Result<()> {
         )?;
     }
 
-    // close betting
-    close_account(
-        ctx.accounts.user_betting.to_account_info().as_ref(),
-        ctx.accounts.payer.to_account_info().as_ref(),
-    )?;
+    // close thread account
+    clockwork_sdk::cpi::thread_delete(CpiContext::new_with_signer(
+        ctx.accounts.clockwork_program.to_account_info(),
+        clockwork_sdk::cpi::ThreadDelete {
+            authority: ctx.accounts.authority.to_account_info(),
+            close_to: ctx.accounts.owner.to_account_info(),
+            thread: ctx.accounts.thread.to_account_info(),
+        },
+        &[&[crate::AUTH_SEED.as_bytes(), &[pool_state.auth_bump]]],
+    ))?;
+
+    // // close betting
+    // close_account(
+    //     ctx.accounts.user_betting.to_account_info().as_ref(),
+    //     ctx.accounts.owner.to_account_info().as_ref(),
+    // )?;
 
     emit!(OrderCompleted {
         betting_id: ctx.accounts.user_betting.key(),

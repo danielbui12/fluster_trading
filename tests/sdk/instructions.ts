@@ -9,6 +9,7 @@ import {
 } from "@solana/web3.js";
 import {
     ASSOCIATED_TOKEN_PROGRAM_ID,
+    NATIVE_MINT,
     TOKEN_PROGRAM_ID, getAccount, getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
 import { accountExist } from "./web3";
@@ -22,8 +23,8 @@ import {
 import { sendAndConfirmIx } from "./tx";
 import { ClockworkProvider } from '@clockwork-xyz/sdk'
 export const TradeDirection = {
-    ZeroForOne: 0,
-    OneForZero: 1,
+    Up: 0,
+    Down: 1,
 };
 export type TradeDirectionKeyType = keyof typeof TradeDirection;
 export type TradeDirectionValueType = typeof TradeDirection[TradeDirectionKeyType];
@@ -33,6 +34,7 @@ export async function initialize(
     payer: Signer,
     tokenOracle: PublicKey,
     tradingToken: PublicKey,
+    ftTokenMint: PublicKey,
     config: { trading_fee_rate: number, protocol_fee_rate: number },
     confirmOptions?: ConfirmOptions
 ) {
@@ -49,7 +51,7 @@ export async function initialize(
     );
     const [vault] = getPoolVaultAddress(
         poolAddress,
-        tradingToken,
+        ftTokenMint,
         program.programId
     );
 
@@ -60,17 +62,17 @@ export async function initialize(
             authority: authority,
             poolState: poolAddress,
             tokenOracle: tokenOracle,
-            tokenMint: tradingToken,
+            tradingTokenMint: NATIVE_MINT,
+            tokenMint: ftTokenMint,
             tokenVault: vault,
             tokenProgram: TOKEN_PROGRAM_ID,
-            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
             systemProgram: SystemProgram.programId,
             rent: SYSVAR_RENT_PUBKEY,
         })
         .instruction();
     // const txHash = await sendAndConfirmIx(program.provider.connection, [ix], [payer], undefined, confirmOptions);
     // const poolState = await program.account.poolState.fetch(poolAddress)
-    return { ix, poolAddress };
+    return { ix, poolAddress, authority };
 }
 
 export async function deposit(
@@ -120,7 +122,7 @@ export async function deposit(
             destinationTokenMint: ftTokenMint,
             destinationTokenProgram: TOKEN_PROGRAM_ID,
             tokenOracle: tokenOracle,
-            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+            // associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
             systemProgram: SystemProgram.programId,
             rent: SYSVAR_RENT_PUBKEY,
         })
@@ -134,12 +136,11 @@ export async function deposit(
 export async function betting(
     program: Program<FlusterTrading>,
     clockworkProvider: ClockworkProvider,
-    threadId: string,
     payer: Signer,
     tradingToken: PublicKey,
     ftTokenMint: PublicKey,
     config: {
-        thread_id: Buffer,
+        threadId: string,
         amountIn: BN,
         priceSlippage: BN,
         destinationTimestamp: BN,
@@ -162,7 +163,7 @@ export async function betting(
     );
     const [vault] = getPoolVaultAddress(
         poolAddress,
-        tradingToken,
+        ftTokenMint,
         program.programId
     );
     const [userBettingState] = getUserBettingState(
@@ -172,11 +173,11 @@ export async function betting(
     )
     const [thread] = clockworkProvider.getThreadPDA(
         authority,
-        threadId,
+        config.threadId,
     )
 
     const ix = await program.methods
-        .betting(config.thread_id, config.amountIn, config.priceSlippage, config.destinationTimestamp, config.tradeDirection)
+        .betting(Buffer.from(config.threadId), config.amountIn, config.priceSlippage, config.destinationTimestamp, config.tradeDirection)
         .accounts({
             payer: payer.publicKey,
             authority: authority,
@@ -193,12 +194,69 @@ export async function betting(
         })
         .instruction();
 
-    const txHash = await sendAndConfirmIx(program.provider.connection, [ix], [payer], undefined, confirmOptions);
-    console.log("betting tx: ", txHash);
-    return { txHash, userBettingState };
+    // const txHash = await sendAndConfirmIx(program.provider.connection, [ix], [payer], undefined, confirmOptions);
+    // console.log("betting tx: ", txHash);
+    return { ix, userBettingState };
 }
 
 export async function complete(
+    program: Program<FlusterTrading>,
+    clockworkProvider: ClockworkProvider,
+    payer: Signer,
+    tradingToken: PublicKey,
+    ftTokenMint: PublicKey,
+    confirmOptions?: ConfirmOptions,
+) {
+    const [poolAddress] = getPoolAddress(
+        tradingToken,
+        program.programId
+    );
+
+    const [authority] = getAuthAddress(
+        program.programId
+    );
+    const [userAccount] = getUserVaultAddress(
+        payer.publicKey,
+        ftTokenMint,
+        program.programId
+    );
+    const [vault] = getPoolVaultAddress(
+        poolAddress,
+        ftTokenMint,
+        program.programId
+    );
+    const [userBettingState] = getUserBettingState(
+        payer.publicKey,
+        poolAddress,
+        program.programId,
+    )
+    const userBettingData = await program.account.bettingState.fetch(userBettingState);
+
+    const ix = await program.methods
+        .complete()
+        .accounts({
+            payer: payer.publicKey,
+            owner: userBettingData.owner,
+            authority: authority,
+            poolState: poolAddress,
+            userAccount: userAccount,
+            tokenVault: vault,
+            userBetting: userBettingState,
+            tokenMint: ftTokenMint,
+            thread: userBettingData.thread,
+            clockworkProgram: clockworkProvider.threadProgram.programId,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+        })
+        .instruction();
+
+    // const txHash = await sendAndConfirmIx(program.provider.connection, [ix], [payer], undefined, confirmOptions);
+    // console.log("betting tx: ", txHash);
+    return { ix };
+}
+
+
+export async function closeBetting(
     program: Program<FlusterTrading>,
     payer: Signer,
     tradingToken: PublicKey,
@@ -220,7 +278,7 @@ export async function complete(
     );
     const [vault] = getPoolVaultAddress(
         poolAddress,
-        tradingToken,
+        ftTokenMint,
         program.programId
     );
     const [userBettingState] = getUserBettingState(
@@ -230,7 +288,7 @@ export async function complete(
     )
 
     const ix = await program.methods
-        .complete()
+        .closeBetting()
         .accounts({
             payer: payer.publicKey,
             authority: authority,
@@ -244,7 +302,7 @@ export async function complete(
         })
         .instruction();
 
-    const txHash = await sendAndConfirmIx(program.provider.connection, [ix], [payer], undefined, confirmOptions);
-    console.log("betting tx: ", txHash);
-    return { txHash, userBettingState };
+    // const txHash = await sendAndConfirmIx(program.provider.connection, [ix], [payer], undefined, confirmOptions);
+    // console.log("close betting tx: ", txHash);
+    return { ix };
 }

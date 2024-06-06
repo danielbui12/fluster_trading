@@ -13,8 +13,9 @@ describe("initialize test", () => {
         const SOL_PRICE_FEED_ID = new PublicKey("H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG");
         const accountData = await connection.getAccountInfo(SOL_PRICE_FEED_ID);
         const priceData = parsePriceData(accountData.data);
-        console.log('priceComponents', priceData.priceComponents);
+        // console.log('priceComponents', priceData.priceComponents);
         console.log('SOL/USD', priceData.priceComponents[0].aggregate.price);
+        console.log('SOL/USD', priceData.priceComponents[0].aggregate.priceComponent);
         assert(true);
     });
 });

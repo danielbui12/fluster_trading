@@ -1,6 +1,6 @@
 use crate::error::ErrorCode;
 use crate::states::*;
-use crate::utils::close_account;
+// use crate::utils::close_account;
 use crate::utils::transfer_token;
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program;
@@ -12,9 +12,13 @@ use clockwork_sdk::state::Thread;
 
 #[derive(Accounts)]
 pub struct Cancel<'info> {
-    /// The user performing the trading
+    /// Payer
     #[account(mut)]
     pub payer: Signer<'info>,
+
+    /// The user performing the trading
+    #[account(mut, address = user_betting.load()?.owner)]
+    pub owner: SystemAccount<'info>,
 
     /// CHECK: authority
     #[account(
@@ -51,7 +55,7 @@ pub struct Cancel<'info> {
     /// betting state
     #[account(
         mut,
-        constraint = user_betting.load()?.pool_state == pool_state.key() && user_betting.load()?.owner == payer.key()
+        constraint = user_betting.load()?.pool_state == pool_state.key()
     )]
     pub user_betting: AccountLoader<'info, BettingState>,
 
@@ -86,7 +90,7 @@ pub fn cancel(ctx: Context<crate::Cancel>) -> Result<()> {
     let block_timestamp = solana_program::clock::Clock::get()?.unix_timestamp;
     let pool_id = ctx.accounts.pool_state.key();
     let pool_state = ctx.accounts.pool_state.load()?;
-    let user_betting = &mut ctx.accounts.user_betting.load_mut()?;
+    let user_betting = &mut ctx.accounts.user_betting.load()?;
 
     // check if timestamp is not passed and result_price is not 0
     if user_betting.destination_timestamp < (block_timestamp as u64)
@@ -120,11 +124,11 @@ pub fn cancel(ctx: Context<crate::Cancel>) -> Result<()> {
         auth,
     )?;
 
-    // close betting
-    close_account(
-        ctx.accounts.user_betting.to_account_info().as_ref(),
-        ctx.accounts.payer.to_account_info().as_ref(),
-    )?;
+    // // close betting
+    // close_account(
+    //     ctx.accounts.user_betting.to_account_info().as_ref(),
+    //     ctx.accounts.owner.to_account_info().as_ref(),
+    // )?;
 
     emit!(OrderCancelled {
         betting_id: ctx.accounts.user_betting.key(),

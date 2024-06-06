@@ -121,6 +121,13 @@ pub fn betting(
         u64::try_from(price).unwrap()
     };
 
+    // cancel if price slippage is exceeded
+    #[cfg(feature = "enable-log")]
+    msg!(
+        "current token price: {}, price slippage: {}",
+        current_token_price,
+        price_slippage
+    );
     if TradeDirection::Up.compare_u8(trade_direction) && current_token_price > price_slippage
         || TradeDirection::Down.compare_u8(trade_direction) && current_token_price < price_slippage
     {
@@ -137,13 +144,14 @@ pub fn betting(
         actual_amount,
         ctx.accounts.token_mint.decimals,
         true,
-        auth,
+        &[&[crate::AUTH_SEED.as_bytes(), &[pool_state.auth_bump]]],
     )?;
 
     let user_betting = &mut ctx.accounts.user_betting.load_init()?;
     user_betting.initialize(
         pool_id,
         ctx.accounts.payer.key(),
+        ctx.accounts.thread.key(),
         trade_direction,
         amount_in,
         current_token_price,
@@ -154,7 +162,7 @@ pub fn betting(
     let target_ix = Instruction {
         program_id: crate::id(),
         accounts: crate::accounts::Reveal {
-            payer: ctx.accounts.payer.key(),
+            owner: ctx.accounts.payer.key(),
             authority: ctx.accounts.authority.key(),
             pool_state: ctx.accounts.pool_state.key(),
             user_betting: ctx.accounts.user_betting.key(),
@@ -180,7 +188,7 @@ pub fn betting(
                 thread: ctx.accounts.thread.to_account_info(),
                 authority: ctx.accounts.authority.to_account_info(),
             },
-            &auth,
+            auth,
         ),
         crate::CLOCK_WORK_FEE,
         thread_id.clone(),

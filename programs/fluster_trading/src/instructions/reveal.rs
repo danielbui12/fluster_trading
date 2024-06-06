@@ -8,9 +8,13 @@ use clockwork_sdk::state::Thread;
 
 #[derive(Accounts)]
 pub struct Reveal<'info> {
-    /// The user performing the trading
+    // /// The user performing the trading
+    // #[account(mut)]
+    // pub payer: Signer<'info>,
+    //
+    /// The owner performing the trading
     #[account(mut)]
-    pub payer: Signer<'info>,
+    pub owner: SystemAccount<'info>,
 
     /// CHECK: authority
     #[account(
@@ -28,12 +32,12 @@ pub struct Reveal<'info> {
     /// betting state
     #[account(
         mut,
-        constraint = user_betting.load()?.pool_state == pool_state.key() && user_betting.load()?.owner == payer.key()
+        constraint = user_betting.load()?.pool_state == pool_state.key()  && user_betting.load()?.owner == owner.key()
     )]
     pub user_betting: AccountLoader<'info, BettingState>,
 
     /// The thread to reset.
-    #[account(mut, constraint = thread.authority.eq(&authority.key()))]
+    #[account(mut, address = user_betting.load()?.thread)]
     pub thread: Account<'info, Thread>,
 
     /// The Clockwork thread program.
@@ -62,7 +66,6 @@ pub struct Reveal<'info> {
 pub fn reveal(ctx: Context<Reveal>) -> Result<()> {
     let block_timestamp = solana_program::clock::Clock::get()?.unix_timestamp;
     let pool_id = ctx.accounts.pool_state.key();
-    let pool_state = ctx.accounts.pool_state.load()?;
     let user_betting = &mut ctx.accounts.user_betting.load_mut()?;
 
     // check if timestamp is passed and result_price is not 0
@@ -72,21 +75,25 @@ pub fn reveal(ctx: Context<Reveal>) -> Result<()> {
         return err!(ErrorCode::NotApproved);
     }
 
+    #[cfg(feature = "enable-log")]
+    msg!("Thread triggered");
+
     let current_token_price = {
         let (price, _) = get_token_price(block_timestamp, ctx.accounts.token_oracle.as_ref());
         u64::try_from(price).unwrap()
     };
     user_betting.result_price = current_token_price;
 
-    clockwork_sdk::cpi::thread_delete(CpiContext::new_with_signer(
-        ctx.accounts.clockwork_program.to_account_info(),
-        clockwork_sdk::cpi::ThreadDelete {
-            authority: ctx.accounts.authority.to_account_info(),
-            close_to: ctx.accounts.payer.to_account_info(),
-            thread: ctx.accounts.thread.to_account_info(),
-        },
-        &[&[crate::AUTH_SEED.as_bytes(), &[pool_state.auth_bump]]],
-    ))?;
+    // reentrancy error
+    // clockwork_sdk::cpi::thread_delete(CpiContext::new_with_signer(
+    //     ctx.accounts.clockwork_program.to_account_info(),
+    //     clockwork_sdk::cpi::ThreadDelete {
+    //         authority: ctx.accounts.authority.to_account_info(),
+    //         close_to: ctx.accounts.owner.to_account_info(),
+    //         thread: ctx.accounts.thread.to_account_info(),
+    //     },
+    //     &[&[crate::AUTH_SEED.as_bytes(), &[pool_state.auth_bump]]],
+    // ))?;
 
     emit!(OrderFulfilled {
         betting_id: ctx.accounts.user_betting.key(),

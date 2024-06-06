@@ -3,7 +3,6 @@ use crate::states::*;
 use crate::utils::*;
 use anchor_lang::{accounts::interface_account::InterfaceAccount, prelude::*};
 use anchor_spl::{
-    associated_token::AssociatedToken,
     token::Token, // token_2022::spl_token_2022,
     token_interface::Mint,
 };
@@ -30,7 +29,7 @@ pub struct Initialize<'info> {
         init,
         seeds = [
             POOL_SEED.as_bytes(),
-            token_mint.key().as_ref(),
+            trading_token_mint.key().as_ref(),
         ],
         bump,
         payer = payer,
@@ -41,6 +40,9 @@ pub struct Initialize<'info> {
     /// CHECK: Token oracle
     #[account(mut)]
     pub token_oracle: UncheckedAccount<'info>,
+
+    /// CHECK: Trading token mint
+    pub trading_token_mint: UncheckedAccount<'info>,
 
     /// Token mint
     #[account(
@@ -59,12 +61,13 @@ pub struct Initialize<'info> {
         bump,
     )]
     pub token_vault: UncheckedAccount<'info>,
+
     /// Program to create mint account and mint tokens
     pub token_program: Program<'info, Token>,
-    /// Program to create an ATA
-    pub associated_token_program: Program<'info, AssociatedToken>,
+
     /// To create a new program account
     pub system_program: Program<'info, System>,
+
     /// Sysvar for program account
     pub rent: Sysvar<'info, Rent>,
 }
@@ -111,7 +114,7 @@ pub fn initialize(
         protocol_fee_rate,
         ctx.accounts.token_vault.key(),
         ctx.accounts.token_oracle.key(),
-        ctx.accounts.token_mint.key(),
+        ctx.accounts.trading_token_mint.key(),
     );
 
     emit!(PoolInitialized {

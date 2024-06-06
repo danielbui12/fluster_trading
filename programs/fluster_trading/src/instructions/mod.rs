@@ -16,6 +16,9 @@ pub use cancel::*;
 pub mod complete;
 pub use complete::*;
 
+pub mod close_betting;
+pub use close_betting::*;
+
 pub mod withdraw;
 pub use withdraw::*;
 
