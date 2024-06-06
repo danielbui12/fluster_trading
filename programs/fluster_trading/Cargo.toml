@@ -1,7 +1,7 @@
 [package]
 name = "fluster_trading"
 version = "0.1.0"
-description = "Fluster trading will make you agitated or confused"
+description = "Fluster trading - Double or nothing game"
 edition = "2021"
 authors = ["danielbui12"]
 license = "Apache-2.0"
