@@ -15,3 +15,12 @@ Clone the repository and test the program.
 git clone https://github.com/danielbui12/fluster_trading
 cd fluster_trading && anchor test
 ```
+
+## Fork program on mainnet
+
+```sh
+solana program dump -u m metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s forked-programs/metadata.so
+solana program dump -u m F8dKseqmBoAkHx3c58Lmb9TgJv5qeTf3BbtZZSEzYvUa forked-programs/clockwork_network.so
+solana program dump -u m CLoCKyJ6DXBJqqu2VWx9RLbgnwwR6BMHHuyasVmfMzBh forked-programs/clockwork_thread_v2.so
+```
+
