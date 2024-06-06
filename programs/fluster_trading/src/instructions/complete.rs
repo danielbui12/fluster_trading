@@ -30,7 +30,7 @@ pub struct Complete<'info> {
     pub pool_state: AccountLoader<'info, PoolState>,
 
     /// The user token account for FT mint
-    #[account(mut)]
+    #[account(mut, constraint = user_account.mint == token_mint.key() && user_account.owner == user_betting.load()?.owner)]
     pub user_account: Box<InterfaceAccount<'info, TokenAccount>>,
 
     /// Token vault for the pool
@@ -43,7 +43,7 @@ pub struct Complete<'info> {
     /// betting state
     #[account(
         mut,
-        constraint = user_betting.load()?.pool_state == pool_state.key() && user_betting.load()?.owner == payer.key()
+        constraint = user_betting.load()?.pool_state == pool_state.key()
     )]
     pub user_betting: AccountLoader<'info, BettingState>,
 
@@ -55,6 +55,9 @@ pub struct Complete<'info> {
 
     /// The token program
     pub token_program: Program<'info, Token>,
+
+    /// system program
+    pub system_program: Program<'info, System>,
 }
 
 pub fn complete(ctx: Context<Complete>) -> Result<()> {

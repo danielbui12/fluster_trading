@@ -3,10 +3,7 @@ use crate::states::*;
 use crate::utils::get_token_price;
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program;
-use anchor_spl::{
-    token::Token,
-    token_interface::{Mint, TokenAccount},
-};
+use anchor_spl::{token::Token, token_interface::Mint};
 use clockwork_sdk::state::Thread;
 
 #[derive(Accounts)]
@@ -27,25 +24,6 @@ pub struct Reveal<'info> {
     /// The program account of the pool in which the swap will be performed
     #[account(mut)]
     pub pool_state: AccountLoader<'info, PoolState>,
-
-    /// The user token account for token
-    #[account(
-        mut,
-        seeds = [
-            crate::USER_SEED.as_bytes(),
-            payer.key().as_ref(),
-            token_mint.key().as_ref(),
-        ],
-        bump,
-    )]
-    pub token_account: Box<InterfaceAccount<'info, TokenAccount>>,
-
-    /// Token vault for the pool
-    #[account(
-        mut,
-        constraint = token_vault.key() == pool_state.load()?.token_vault
-    )]
-    pub token_vault: Box<InterfaceAccount<'info, TokenAccount>>,
 
     /// betting state
     #[account(

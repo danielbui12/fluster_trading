@@ -61,7 +61,7 @@ pub struct Initialize<'info> {
     pub token_vault: UncheckedAccount<'info>,
     /// Program to create mint account and mint tokens
     pub token_program: Program<'info, Token>,
-    /// Program to create an ATA for receiving position NFT
+    /// Program to create an ATA
     pub associated_token_program: Program<'info, AssociatedToken>,
     /// To create a new program account
     pub system_program: Program<'info, System>,
@@ -111,6 +111,7 @@ pub fn initialize(
         protocol_fee_rate,
         ctx.accounts.token_vault.key(),
         ctx.accounts.token_oracle.key(),
+        ctx.accounts.token_mint.key(),
     );
 
     emit!(PoolInitialized {

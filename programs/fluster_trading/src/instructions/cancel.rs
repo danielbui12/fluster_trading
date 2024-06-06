@@ -4,8 +4,85 @@ use crate::utils::close_account;
 use crate::utils::transfer_token;
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program;
+use anchor_spl::{
+    token::Token,
+    token_interface::{Mint, TokenAccount},
+};
+use clockwork_sdk::state::Thread;
 
-pub fn cancel(ctx: Context<crate::Reveal>) -> Result<()> {
+#[derive(Accounts)]
+pub struct Cancel<'info> {
+    /// The user performing the trading
+    #[account(mut)]
+    pub payer: Signer<'info>,
+
+    /// CHECK: authority
+    #[account(
+        seeds = [
+            crate::AUTH_SEED.as_bytes(),
+        ],
+        bump,
+    )]
+    pub authority: UncheckedAccount<'info>,
+
+    /// The program account of the pool in which the swap will be performed
+    #[account(mut)]
+    pub pool_state: AccountLoader<'info, PoolState>,
+
+    /// The user token account for token
+    #[account(
+        mut,
+        seeds = [
+            crate::USER_SEED.as_bytes(),
+            payer.key().as_ref(),
+            token_mint.key().as_ref(),
+        ],
+        bump,
+    )]
+    pub user_account: Box<InterfaceAccount<'info, TokenAccount>>,
+
+    /// Token vault for the pool
+    #[account(
+        mut,
+        constraint = token_vault.key() == pool_state.load()?.token_vault
+    )]
+    pub token_vault: Box<InterfaceAccount<'info, TokenAccount>>,
+
+    /// betting state
+    #[account(
+        mut,
+        constraint = user_betting.load()?.pool_state == pool_state.key() && user_betting.load()?.owner == payer.key()
+    )]
+    pub user_betting: AccountLoader<'info, BettingState>,
+
+    /// The thread to reset.
+    #[account(mut, constraint = thread.authority.eq(&authority.key()))]
+    pub thread: Account<'info, Thread>,
+
+    /// The Clockwork thread program.
+    #[account(address = clockwork_sdk::ID)]
+    pub clockwork_program: Program<'info, clockwork_sdk::ThreadProgram>,
+
+    /// CHECK: token oracle
+    #[account(
+        address = pool_state.load()?.token_oracle
+    )]
+    pub token_oracle: AccountInfo<'info>,
+
+    /// The FT mint
+    #[account(
+        address = crate::currency::id()
+    )]
+    pub token_mint: Box<InterfaceAccount<'info, Mint>>,
+
+    /// The token program
+    pub token_program: Program<'info, Token>,
+
+    /// The system program
+    pub system_program: Program<'info, System>,
+}
+
+pub fn cancel(ctx: Context<crate::Cancel>) -> Result<()> {
     let block_timestamp = solana_program::clock::Clock::get()?.unix_timestamp;
     let pool_id = ctx.accounts.pool_state.key();
     let pool_state = ctx.accounts.pool_state.load()?;
@@ -33,7 +110,7 @@ pub fn cancel(ctx: Context<crate::Reveal>) -> Result<()> {
     let auth: &[&[&[u8]]] = &[&[crate::AUTH_SEED.as_bytes(), &[pool_state.auth_bump]]];
     transfer_token(
         ctx.accounts.authority.to_account_info(),
-        ctx.accounts.token_account.to_account_info(),
+        ctx.accounts.user_account.to_account_info(),
         ctx.accounts.token_vault.to_account_info(),
         ctx.accounts.token_mint.to_account_info(),
         ctx.accounts.token_program.to_account_info(),

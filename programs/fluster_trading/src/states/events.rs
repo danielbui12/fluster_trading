@@ -17,7 +17,7 @@ pub struct OrderPlaced {
     #[index]
     pub pool_id: Pubkey,
     /// pool vault
-    pub token_vault_before: u64,
+    pub token_vault: u64,
     /// amount in
     pub amount_in: u64,
     /// trade direction

@@ -108,51 +108,6 @@ pub fn transfer_native_token<'a>(
     return Ok(());
 }
 
-/// Issue a spl_token `MintTo` instruction.
-pub fn token_mint_to<'a>(
-    authority: AccountInfo<'a>,
-    token_program: AccountInfo<'a>,
-    mint: AccountInfo<'a>,
-    destination: AccountInfo<'a>,
-    amount: u64,
-    signer_seeds: &[&[&[u8]]],
-) -> Result<()> {
-    token_2022::mint_to(
-        CpiContext::new_with_signer(
-            token_program,
-            token_2022::MintTo {
-                to: destination,
-                authority,
-                mint,
-            },
-            signer_seeds,
-        ),
-        amount,
-    )
-}
-
-pub fn token_burn<'a>(
-    authority: AccountInfo<'a>,
-    token_program: AccountInfo<'a>,
-    mint: AccountInfo<'a>,
-    from: AccountInfo<'a>,
-    amount: u64,
-    signer_seeds: &[&[&[u8]]],
-) -> Result<()> {
-    token_2022::burn(
-        CpiContext::new_with_signer(
-            token_program.to_account_info(),
-            token_2022::Burn {
-                from,
-                authority,
-                mint,
-            },
-            signer_seeds,
-        ),
-        amount,
-    )
-}
-
 /// Calculate the fee for output amount
 pub fn get_transfer_inverse_fee(mint_info: &AccountInfo, post_fee_amount: u64) -> Result<u64> {
     if *mint_info.owner == Token::id() {
@@ -286,7 +241,7 @@ pub fn create_system_account<'a>(
 
 // invoke Pyth program to get token price
 pub fn get_token_price(block_timestamp: UnixTimestamp, price_account: &AccountInfo) -> (u64, u32) {
-    const STALENESS_THRESHOLD: u64 = 10; // staleness threshold in seconds
+    const STALENESS_THRESHOLD: u64 = 300; // staleness threshold in seconds, 5 minutes
     let price_feed = SolanaPriceAccount::account_info_to_feed(price_account).unwrap();
     let current_price = price_feed
         .get_price_no_older_than(block_timestamp, STALENESS_THRESHOLD)
@@ -296,10 +251,14 @@ pub fn get_token_price(block_timestamp: UnixTimestamp, price_account: &AccountIn
         u32::try_from(-current_price.expo).unwrap(),
     );
     #[cfg(feature = "enable-log")]
-    msg!("current_price:{}", display_price);
+    msg!(
+        "current_price: {} at {}",
+        display_price,
+        current_price.publish_time
+    );
 
     (
         u64::try_from(current_price.price).unwrap(),
-        u32::try_from(current_price.expo).unwrap(),
+        u32::try_from(-current_price.expo).unwrap(),
     )
 }

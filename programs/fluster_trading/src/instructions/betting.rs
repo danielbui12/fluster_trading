@@ -42,9 +42,9 @@ pub struct Betting<'info> {
         ],
         bump,
     )]
-    pub token_account: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub user_account: Box<InterfaceAccount<'info, TokenAccount>>,
 
-    /// Token vault for the pool
+    /// Token vault of the pool
     #[account(
         mut,
         constraint = token_vault.key() == pool_state.load()?.token_vault
@@ -130,7 +130,7 @@ pub fn betting(
     let auth: &[&[&[u8]]] = &[&[crate::AUTH_SEED.as_bytes(), &[pool_state.auth_bump]]];
     transfer_token(
         ctx.accounts.authority.to_account_info(),
-        ctx.accounts.token_account.to_account_info(),
+        ctx.accounts.user_account.to_account_info(),
         ctx.accounts.token_vault.to_account_info(),
         ctx.accounts.token_mint.to_account_info(),
         ctx.accounts.token_program.to_account_info(),
@@ -157,8 +157,6 @@ pub fn betting(
             payer: ctx.accounts.payer.key(),
             authority: ctx.accounts.authority.key(),
             pool_state: ctx.accounts.pool_state.key(),
-            token_account: ctx.accounts.token_account.key(),
-            token_vault: ctx.accounts.token_vault.key(),
             user_betting: ctx.accounts.user_betting.key(),
             thread: ctx.accounts.thread.key(),
             clockwork_program: ctx.accounts.clockwork_program.key(),
@@ -193,7 +191,7 @@ pub fn betting(
     emit!(OrderPlaced {
         betting_id: ctx.accounts.user_betting.key(),
         pool_id: pool_id,
-        token_vault_before: ctx.accounts.token_vault.amount,
+        token_vault: ctx.accounts.token_vault.amount,
         trade_direction: trade_direction,
         amount_in: amount_in,
         destination_timestamp: destination_timestamp as u64,

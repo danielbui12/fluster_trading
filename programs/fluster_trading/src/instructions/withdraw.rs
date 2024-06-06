@@ -22,16 +22,16 @@ pub fn withdraw(ctx: Context<crate::Deposit>, amount: u64) -> Result<()> {
             .unwrap(),
     )
     .unwrap();
-    let token_vault =
+    let user_account =
         spl_token_2022::extension::StateWithExtensions::<spl_token_2022::state::Account>::unpack(
             ctx.accounts
-                .destination_user_vault
+                .user_account
                 .to_account_info()
                 .try_borrow_data()?
                 .deref(),
         )?
         .base;
-    if actual_receive_amount > token_vault.amount {
+    if actual_receive_amount > user_account.amount {
         return err!(ErrorCode::InvalidAmount);
     }
 
@@ -50,8 +50,8 @@ pub fn withdraw(ctx: Context<crate::Deposit>, amount: u64) -> Result<()> {
     // transfer FT mint from destination_user to destination_vault account
     transfer_token(
         ctx.accounts.operator.to_account_info(),
-        ctx.accounts.destination_user_vault.to_account_info(),
-        ctx.accounts.destination_operator_vault.to_account_info(),
+        ctx.accounts.user_account.to_account_info(),
+        ctx.accounts.operator_account.to_account_info(),
         ctx.accounts.destination_token_mint.to_account_info(),
         ctx.accounts.destination_token_program.to_account_info(),
         actual_receive_amount,
@@ -60,6 +60,7 @@ pub fn withdraw(ctx: Context<crate::Deposit>, amount: u64) -> Result<()> {
         &[],
     )?;
 
+    #[cfg(feature = "enable-log")]
     msg!(
         "Withdraw {} FT and receive {} mint {} successfully.",
         actual_receive_amount,

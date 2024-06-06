@@ -9,6 +9,42 @@
   dependencies:
     regenerator-runtime "^0.14.0"
 
+"@babel/runtime@^7.24.6":
+  version "7.24.7"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.24.7.tgz#f4f0d5530e8dbdf59b3451b9b3e594b6ba082e12"
+  integrity sha512-UwgBRMjJP+xv857DCngvqXI3Iq6J4v0wXmwc6sapg+zyhbwmQX67LUEFrkK5tbyJ30jGuG3ZvWpBiB9LCy1kWw==
+  dependencies:
+    regenerator-runtime "^0.14.0"
+
+"@clockwork-xyz/sdk@^0.3.4":
+  version "0.3.4"
+  resolved "https://registry.yarnpkg.com/@clockwork-xyz/sdk/-/sdk-0.3.4.tgz#fba9efd4183172c560f2566e42126e021a1e5f4d"
+  integrity sha512-BLSx/HebDaw3FznFoVP94NP4ZI1TNC3ZomU22sBDpGcXPuUp7gBn77TFAVDjrRC+1YmA6p5AAmw8RVx0LIpyTA==
+  dependencies:
+    "@coral-xyz/anchor" "^0.26.0"
+    "@solana/web3.js" "^1.73.2"
+
+"@coral-xyz/anchor@^0.26.0":
+  version "0.26.0"
+  resolved "https://registry.yarnpkg.com/@coral-xyz/anchor/-/anchor-0.26.0.tgz#c8e4f7177e93441afd030f22d777d54d0194d7d1"
+  integrity sha512-PxRl+wu5YyptWiR9F2MBHOLLibm87Z4IMUBPreX+DYBtPM+xggvcPi0KAN7+kIL4IrIhXI8ma5V0MCXxSN1pHg==
+  dependencies:
+    "@coral-xyz/borsh" "^0.26.0"
+    "@solana/web3.js" "^1.68.0"
+    base64-js "^1.5.1"
+    bn.js "^5.1.2"
+    bs58 "^4.0.1"
+    buffer-layout "^1.2.2"
+    camelcase "^6.3.0"
+    cross-fetch "^3.1.5"
+    crypto-hash "^1.3.0"
+    eventemitter3 "^4.0.7"
+    js-sha256 "^0.9.0"
+    pako "^2.0.3"
+    snake-case "^3.0.4"
+    superstruct "^0.15.4"
+    toml "^3.0.0"
+
 "@coral-xyz/anchor@^0.29.0":
   version "0.29.0"
   resolved "https://registry.yarnpkg.com/@coral-xyz/anchor/-/anchor-0.29.0.tgz#bd0be95bedfb30a381c3e676e5926124c310ff12"
@@ -28,6 +64,14 @@
     snake-case "^3.0.4"
     superstruct "^0.15.4"
     toml "^3.0.0"
+
+"@coral-xyz/borsh@^0.26.0":
+  version "0.26.0"
+  resolved "https://registry.yarnpkg.com/@coral-xyz/borsh/-/borsh-0.26.0.tgz#d054f64536d824634969e74138f9f7c52bbbc0d5"
+  integrity sha512-uCZ0xus0CszQPHYfWAqKS5swS1UxvePu83oOF+TWpUkedsNlg6p2p4azxZNSSqwXb9uXMFgxhuMBX9r3Xoi0vQ==
+  dependencies:
+    bn.js "^5.1.2"
+    buffer-layout "^1.2.0"
 
 "@coral-xyz/borsh@^0.28.0":
   version "0.28.0"
@@ -198,6 +242,27 @@
     rpc-websockets "^7.11.0"
     superstruct "^0.14.2"
 
+"@solana/web3.js@^1.73.2":
+  version "1.92.1"
+  resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.92.1.tgz#0c0fef31bbb20590ea5dfb63a578e5dfc4a111f1"
+  integrity sha512-72hytgOHfJLbvKT0+HRuFUhxxZpCnlo4zFDt37UHPel1DJbgqGOWo3xUf3VEPRWBvSRv0EH15g8MGatdj1PO9g==
+  dependencies:
+    "@babel/runtime" "^7.24.6"
+    "@noble/curves" "^1.4.0"
+    "@noble/hashes" "^1.4.0"
+    "@solana/buffer-layout" "^4.0.1"
+    agentkeepalive "^4.5.0"
+    bigint-buffer "^1.1.5"
+    bn.js "^5.2.1"
+    borsh "^0.7.0"
+    bs58 "^4.0.1"
+    buffer "6.0.3"
+    fast-stable-stringify "^1.0.0"
+    jayson "^4.1.0"
+    node-fetch "^2.7.0"
+    rpc-websockets "^7.11.1"
+    superstruct "^1.0.4"
+
 "@types/bn.js@^5.1.0":
   version "5.1.5"
   resolved "https://registry.yarnpkg.com/@types/bn.js/-/bn.js-5.1.5.tgz#2e0dacdcce2c0f16b905d20ff87aedbc6f7b4bf0"
@@ -205,7 +270,14 @@
   dependencies:
     "@types/node" "*"
 
-"@types/chai@^4.3.0":
+"@types/chai-as-promised@^7.1.8":
+  version "7.1.8"
+  resolved "https://registry.yarnpkg.com/@types/chai-as-promised/-/chai-as-promised-7.1.8.tgz#f2b3d82d53c59626b5d6bbc087667ccb4b677fe9"
+  integrity sha512-ThlRVIJhr69FLlh6IctTXFkmhtP3NpMZ2QGq69StYLyKZFp/HOp1VdKZj7RvfNWYYcJ1xlbLGLLWj1UvP5u/Gw==
+  dependencies:
+    "@types/chai" "*"
+
+"@types/chai@*", "@types/chai@^4.3.0":
   version "4.3.16"
   resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.3.16.tgz#b1572967f0b8b60bf3f87fe1d854a5604ea70c82"
   integrity sha512-PatH4iOdyh3MyWtmHVFXLWCCIhUbopaltqddG9BzB+gMIzee2MJrvd+jouii9Z3wzQJruGWAm7WOMjgfG8hQlQ==
@@ -318,7 +390,7 @@ base-x@^3.0.2:
   dependencies:
     safe-buffer "^5.0.1"
 
-base64-js@^1.3.1:
+base64-js@^1.3.1, base64-js@^1.5.1:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/base64-js/-/base64-js-1.5.1.tgz#1b1b440160a5bf7ad40b650f095963481903930a"
   integrity sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==
@@ -418,6 +490,13 @@ camelcase@^6.0.0, camelcase@^6.3.0:
   resolved "https://registry.yarnpkg.com/camelcase/-/camelcase-6.3.0.tgz#5685b95eb209ac9c0c177467778c9c84df58ba9a"
   integrity sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==
 
+chai-as-promised@^7.1.2:
+  version "7.1.2"
+  resolved "https://registry.yarnpkg.com/chai-as-promised/-/chai-as-promised-7.1.2.tgz#70cd73b74afd519754161386421fb71832c6d041"
+  integrity sha512-aBDHZxRzYnUYuIAIPBH2s511DjlKPzXNlXSGFC8CwmroWQLfrW0LtE1nK3MAwwNhJPa9raEjNCmRoFpG0Hurdw==
+  dependencies:
+    check-error "^1.0.2"
+
 chai@^4.3.4:
   version "4.4.1"
   resolved "https://registry.yarnpkg.com/chai/-/chai-4.4.1.tgz#3603fa6eba35425b0f2ac91a009fe924106e50d1"
@@ -444,7 +523,7 @@ chalk@^5.3.0:
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-5.3.0.tgz#67c20a7ebef70e7f3970a01f90fa210cb6860385"
   integrity sha512-dLitG79d+GV1Nb/VYcCDFivJeK1hiukt9QjRNVOsUtTy1rR1YJsmpGGTZ3qJos+uw7WmWF4wUwBd9jxjocFC2w==
 
-check-error@^1.0.3:
+check-error@^1.0.2, check-error@^1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/check-error/-/check-error-1.0.3.tgz#a6502e4312a7ee969f646e83bb3ddd56281bd694"
   integrity sha512-iKEoDYaRmd1mxM90a2OEfWhjsjPpYPuQ+lMYsoxB126+t8fw7ySEO48nmDg5COTjxDI65/Y2OWpeEHk3ZOe8zg==
@@ -769,6 +848,11 @@ jayson@^4.1.0:
     uuid "^8.3.2"
     ws "^7.4.5"
 
+js-sha256@^0.9.0:
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/js-sha256/-/js-sha256-0.9.0.tgz#0b89ac166583e91ef9123644bd3c5334ce9d0966"
+  integrity sha512-sga3MHh9sgQN2+pJ9VYZ+1LPwXOxuBJBA5nrR5/ofPfuiJBE2hnjsaN8se8JznOmGLN2p49Pe5U/ttafcs/apA==
+
 js-yaml@4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-4.1.0.tgz#c1fb65f8f5017901cdd2c951864ba18458a10602"
@@ -1010,6 +1094,18 @@ rpc-websockets@^7.11.0:
     bufferutil "^4.0.1"
     utf-8-validate "^5.0.2"
 
+rpc-websockets@^7.11.1:
+  version "7.11.1"
+  resolved "https://registry.yarnpkg.com/rpc-websockets/-/rpc-websockets-7.11.1.tgz#02d29aa6e561006b4a4c1e4769763948db8f4a62"
+  integrity sha512-ePm9GVlk1D1p1B35iU1AiAr9lMKUpSqU9wjYoUb9YaoabfLAcQ7DG6IfQvyam2nDJ0FOSB00AgEA4pGm/wSD5A==
+  dependencies:
+    eventemitter3 "^4.0.7"
+    uuid "^8.3.2"
+    ws "^8.5.0"
+  optionalDependencies:
+    bufferutil "^4.0.1"
+    utf-8-validate "^5.0.2"
+
 safe-buffer@^5.0.1, safe-buffer@^5.1.0:
   version "5.2.1"
   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.2.1.tgz#1eaf9fa9bdb1fdd4ec75f58f9cdb4e6b7827eec6"
@@ -1078,6 +1174,11 @@ superstruct@^0.15.4:
   version "0.15.5"
   resolved "https://registry.yarnpkg.com/superstruct/-/superstruct-0.15.5.tgz#0f0a8d3ce31313f0d84c6096cd4fa1bfdedc9dab"
   integrity sha512-4AOeU+P5UuE/4nOUkmcQdW5y7i9ndt1cQd/3iUe+LTz3RxESf/W/5lg4B74HbDMMv8PHnPnGCQFH45kBcrQYoQ==
+
+superstruct@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/superstruct/-/superstruct-1.0.4.tgz#0adb99a7578bd2f1c526220da6571b2d485d91ca"
+  integrity sha512-7JpaAoX2NGyoFlI9NBh66BQXGONc+uE+MRS5i2iOBKuS4e+ccgMDjATgZldkah+33DakBxDHiss9kvUcGAO8UQ==
 
 supports-color@8.1.1:
   version "8.1.1"

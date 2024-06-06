@@ -19,6 +19,8 @@ pub enum PoolStatusBitFlag {
 #[repr(packed)]
 #[derive(Default, Debug, InitSpace)]
 pub struct PoolState {
+    /// mint account
+    pub mint: Pubkey,
     /// Token oracle account
     pub token_oracle: Pubkey,
     /// Token
@@ -46,12 +48,14 @@ impl PoolState {
         protocol_fee_rate: u16,
         token_vault: Pubkey,
         token_oracle: Pubkey,
+        mint: Pubkey,
     ) {
         self.token_vault = token_vault;
         self.auth_bump = auth_bump;
         self.token_oracle = token_oracle;
         self.trading_fee_rate = trading_fee_rate;
         self.protocol_fee_rate = protocol_fee_rate;
+        self.mint = mint;
     }
 
     pub fn set_status(&mut self, status: u8) {

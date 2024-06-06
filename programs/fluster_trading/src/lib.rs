@@ -173,7 +173,7 @@ pub mod fluster_trading {
     ///
     /// * `ctx`- The context of accounts
     ///
-    pub fn cancel(ctx: Context<Reveal>) -> Result<()> {
+    pub fn cancel(ctx: Context<Cancel>) -> Result<()> {
         instructions::cancel(ctx)
     }
 
