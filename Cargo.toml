@@ -2,7 +2,7 @@
 members = [
     "programs/*",
     "modules/*"
-, "cli"]
+]
 
 [profile.release]
 overflow-checks = true

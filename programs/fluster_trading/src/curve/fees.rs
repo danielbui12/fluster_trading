@@ -1,6 +1,6 @@
 //! All fee information, to be used for validation currently
 
-pub const FEE_RATE_DENOMINATOR_VALUE: u64 = 1_000_000;
+pub const FEE_RATE_DENOMINATOR_VALUE: u16 = 10_000;
 
 pub struct Fees {}
 

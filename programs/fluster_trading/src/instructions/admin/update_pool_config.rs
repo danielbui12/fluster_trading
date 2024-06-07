@@ -20,8 +20,8 @@ pub fn update_pool_state(ctx: Context<UpdatePoolState>, param: u8, value: u64) -
     let pool_state = &mut ctx.accounts.pool_state.load_mut()?;
     let match_param = Some(param);
     match match_param {
-        Some(0) => update_protocol_fee_rate(pool_state, value),
-        Some(1) => update_trading_fee_rate(pool_state, value),
+        Some(0) => update_protocol_fee_rate(pool_state, u16::try_from(value).unwrap()),
+        Some(1) => update_trading_fee_rate(pool_state, u16::try_from(value).unwrap()),
         // @dev: Further update
         //
         _ => return err!(ErrorCode::InvalidInput),
@@ -30,12 +30,12 @@ pub fn update_pool_state(ctx: Context<UpdatePoolState>, param: u8, value: u64) -
     Ok(())
 }
 
-fn update_protocol_fee_rate(pool_state: &mut RefMut<PoolState>, protocol_fee_rate: u64) {
-    assert!(protocol_fee_rate + (pool_state.trading_fee_rate as u64) <= FEE_RATE_DENOMINATOR_VALUE);
+fn update_protocol_fee_rate(pool_state: &mut RefMut<PoolState>, protocol_fee_rate: u16) {
+    assert!(protocol_fee_rate + pool_state.trading_fee_rate <= FEE_RATE_DENOMINATOR_VALUE);
     pool_state.protocol_fee_rate = u16::try_from(protocol_fee_rate).unwrap();
 }
 
-fn update_trading_fee_rate(pool_state: &mut RefMut<PoolState>, trading_fee_rate: u64) {
-    assert!(trading_fee_rate + (pool_state.protocol_fee_rate as u64) <= FEE_RATE_DENOMINATOR_VALUE);
+fn update_trading_fee_rate(pool_state: &mut RefMut<PoolState>, trading_fee_rate: u16) {
+    assert!(trading_fee_rate + pool_state.protocol_fee_rate <= FEE_RATE_DENOMINATOR_VALUE);
     pool_state.trading_fee_rate = u16::try_from(trading_fee_rate).unwrap();
 }
