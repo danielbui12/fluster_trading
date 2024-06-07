@@ -20,6 +20,7 @@ const bn_js_1 = require("bn.js");
 const sdk_1 = require("@clockwork-xyz/sdk");
 const client_1 = require("@pythnetwork/client");
 const fee_1 = require("./sdk/fee");
+const web3_1 = require("./sdk/web3");
 const preLoad = () => {
     const key = JSON.parse(fs_1.default.readFileSync(config_json_1.default.WALLET_URI, { encoding: 'utf-8' }));
     const wallet = new anchor_1.Wallet(web3_js_1.Keypair.fromSeed(Uint8Array.from(key.slice(0, 32))));
@@ -234,7 +235,10 @@ require('yargs/yargs')(process.argv.slice(2))
         const priceSlippage = priceComponent * BigInt(const_1.PERCENT_DENOMINATION + config_json_1.default.SLIPPAGE) / BigInt(const_1.PERCENTAGE_PADDING);
         console.log('max slippage', priceSlippage);
         //
-        const destinationTimestamp = (0, utils_1.timestampToEpochTime)(Date.now()) + argv.duration_in_second;
+        const ltsBlockTimestamp = await (0, web3_1.getBlockTimestamp)(connection);
+        console.log(ltsBlockTimestamp);
+        const destinationTimestamp = ltsBlockTimestamp + argv.duration;
+        console.log(destinationTimestamp);
         const setupBet = await (0, instructions_1.betting)(program, clockworkProvider, wallet.payer, spl_token_1.NATIVE_MINT, const_1.CURRENCY.publicKey, {
             threadId: Math.floor(Math.random() * 1000000000).toString(),
             amountIn: new bn_js_1.BN(argv.amount_in * web3_js_1.LAMPORTS_PER_SOL),

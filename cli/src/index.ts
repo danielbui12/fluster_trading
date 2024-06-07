@@ -6,7 +6,7 @@ import config from '../config.json';
 import fs from 'fs';
 import { IDL } from './idl/fluster_trading';
 import { Commitment, Connection, Keypair, LAMPORTS_PER_SOL, SystemProgram, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
-import { explorer, shortenAddress, timestampToEpochTime } from "./sdk/utils";
+import { explorer, shortenAddress } from "./sdk/utils";
 import { getUserVaultAddress } from "./sdk/pda";
 import { NATIVE_MINT, TOKEN_PROGRAM_ID, createSyncNativeInstruction, createWrappedNativeAccount, getAccount, getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { TradeDirection, betting, closeBetting, complete, deposit } from "./sdk/instructions";
@@ -16,6 +16,7 @@ import { BN } from "bn.js";
 import { ClockworkProvider } from "@clockwork-xyz/sdk";
 import { parsePriceData } from "@pythnetwork/client";
 import { protocolFee } from "./sdk/fee";
+import { getBlockTimestamp } from "./sdk/web3";
 
 const preLoad = () => {
     const key = JSON.parse(fs.readFileSync(config.WALLET_URI, { encoding: 'utf-8' }));
@@ -182,7 +183,7 @@ require('yargs/yargs')(process.argv.slice(2))
                     wallet.payer,
                     wallet.publicKey,
                     depositAmount,
-                );                
+                );
             }
 
             // deposit
@@ -260,8 +261,10 @@ require('yargs/yargs')(process.argv.slice(2))
             const priceSlippage = priceComponent * BigInt(PERCENT_DENOMINATION + config.SLIPPAGE) / BigInt(PERCENTAGE_PADDING)
             console.log('max slippage', priceSlippage);
             //
-            
-            const destinationTimestamp = timestampToEpochTime(Date.now()) + argv.duration_in_second;
+            const ltsBlockTimestamp = await getBlockTimestamp(connection);
+            console.log(ltsBlockTimestamp);
+            const destinationTimestamp = ltsBlockTimestamp + argv.duration;
+            console.log(destinationTimestamp);
             const setupBet = await betting(
                 program,
                 clockworkProvider,
@@ -276,7 +279,7 @@ require('yargs/yargs')(process.argv.slice(2))
                     tradeDirection: argv.direction
                 }
             )
-            
+
             const txHash = await sendAndConfirmIx(connection, [setupBet.ix], [wallet.payer]);
             explorer({ tx: txHash })
         }

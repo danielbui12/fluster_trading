@@ -1,14 +1,13 @@
 import * as anchor from "@coral-xyz/anchor";
-import { assert, expect } from "chai";
+import { expect } from "chai";
 import { parsePriceData } from "@pythnetwork/client";
-import CurrencyKeyPair from "./assets/currency.json";
 import { currency, operator, user } from "./assets/wallet";
 import { boilerPlateReduction } from "utils/boilerplateReduction";
 import { FlusterTrading } from "target/types/fluster_trading";
 import { TradeDirection, betting, closeBetting, complete, deposit, initialize } from "./sdk/instructions";
 import { NATIVE_MINT, TOKEN_PROGRAM_ID, getAccount } from "@solana/spl-token";
 import { SOL_PRICE_FEED_ID } from "./sdk/oracle";
-import { Betting, PoolState } from "./sdk/type";
+import { Betting } from "./sdk/type";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { ClockworkProvider } from "@clockwork-xyz/sdk";
 import { calculatePriceChange, timestampToEpochTime } from "./sdk/utils";
@@ -124,7 +123,7 @@ describe("Fluster Trading test", () => {
             );
             userBettingAddress = setupBetting.userBettingState;
             userBettingData = await program.account.bettingState.fetch(userBettingAddress) as unknown as Betting;
-        })
+        });
 
         it("Wait for revelation", async () => {
             await waitForThreadExec(clockworkProvider, userBettingData.thread);
@@ -170,6 +169,34 @@ describe("Fluster Trading test", () => {
             } catch (error) {
                 expect(error.message).to.be.eq(`Account does not exist or has no data ${userBettingAddress}`)
             }
+        });
+
+
+        it("Betting again", async () => {
+            const threadId = Math.floor(Math.random() * 1_000_000);
+            const accountData = await connection.getAccountInfo(SOL_PRICE_FEED_ID);
+            const priceData = parsePriceData(accountData.data);
+
+            const setupBetting = await betting(
+                program,
+                clockworkProvider,
+                user,
+                NATIVE_MINT,
+                currency.publicKey,
+                {
+                    threadId: threadId.toString(),
+                    amountIn: new anchor.BN(BET_AMOUNT),
+                    priceSlippage: new anchor.BN((priceData.priceComponents[0].aggregate.priceComponent * 2n).toString()),
+                    destinationTimestamp: new anchor.BN(timestampToEpochTime(Date.now() + (5 * 1000))), // 5 seconds
+                    tradeDirection: TradeDirection.Up
+                }
+            );
+            await expectIxToSucceed(
+                setupBetting.ix,
+                [user],
+            );
+            userBettingAddress = setupBetting.userBettingState;
+            userBettingData = await program.account.bettingState.fetch(userBettingAddress) as unknown as Betting;
         });
     })
 });
