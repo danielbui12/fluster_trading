@@ -110,15 +110,15 @@ require('yargs/yargs')(process.argv.slice(2))
                 const tradingFeeAmount = (0, fee_1.protocolFee)(p.betAmount.toNumber(), poolState[p.poolState.toString()].tradingFeeRate);
                 const isUserWin = ('up' in p.tradeDirection && p.resultPrice > p.positionPrice) || ('down' in p.tradeDirection && p.resultPrice < p.positionPrice);
                 const totalPnL = p.resultPrice.toNumber() !== 0 ?
-                    (isUserWin ? p.betAmount.toNumber() * 2 - tradingFeeAmount : '-' + (protocolFeeAmount + p.betAmount.toNumber())) :
+                    (isUserWin ? p.betAmount.toNumber() * 2 - tradingFeeAmount : protocolFeeAmount + p.betAmount.toNumber()) :
                     protocolFeeAmount;
                 return {
                     poolAddress: (0, utils_1.shortenAddress)(p.poolState.toString()),
                     threadId: (0, utils_1.shortenAddress)(p.thread.toString()),
-                    amountIn: p.betAmount.toString(),
+                    amountIn: (p.betAmount.toNumber() / web3_js_1.LAMPORTS_PER_SOL).toLocaleString(),
                     positionPrice: p.positionPrice.toString(),
                     resultPrice: p.resultPrice.toString(),
-                    PnL: totalPnL
+                    PnL: ((isUserWin ? 1 : -1) * (totalPnL / web3_js_1.LAMPORTS_PER_SOL)).toLocaleString()
                 };
             })).then(console.table);
         }
@@ -173,8 +173,6 @@ require('yargs/yargs')(process.argv.slice(2))
         tx.add(setupDeposit.ix);
         const txHash = await (0, web3_js_1.sendAndConfirmTransaction)(connection, tx, [wallet.payer, const_1.OPERATOR]);
         (0, utils_1.explorer)({ tx: txHash });
-        const newAccountData = (await (0, spl_token_1.getAccount)(connection, setupDeposit.userAccount));
-        console.log("Balance:", newAccountData.amount);
     }
 })
     .command({
@@ -187,7 +185,7 @@ require('yargs/yargs')(process.argv.slice(2))
         const [userAccount] = (0, pda_1.getUserVaultAddress)(wallet.publicKey, const_1.CURRENCY.publicKey, program.programId);
         try {
             const userAccountData = await (0, spl_token_1.getAccount)(connection, userAccount);
-            console.log("Balance:", userAccountData.amount);
+            console.log("Balance:", (userAccountData.amount / BigInt(web3_js_1.LAMPORTS_PER_SOL)).toLocaleString());
         }
         catch (error) {
             console.error(error);

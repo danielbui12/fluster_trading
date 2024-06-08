@@ -120,16 +120,16 @@ require('yargs/yargs')(process.argv.slice(2))
                     )
 
                     const totalPnL = p.resultPrice.toNumber() !== 0 ?
-                        (isUserWin ? p.betAmount.toNumber() * 2 - tradingFeeAmount : '-' + (protocolFeeAmount + p.betAmount.toNumber())) :
+                        (isUserWin ? p.betAmount.toNumber() * 2 - tradingFeeAmount : protocolFeeAmount + p.betAmount.toNumber()) :
                         protocolFeeAmount
 
                     return {
                         poolAddress: shortenAddress(p.poolState.toString()),
                         threadId: shortenAddress(p.thread.toString()),
-                        amountIn: p.betAmount.toString(),
+                        amountIn: (p.betAmount.toNumber() / LAMPORTS_PER_SOL).toLocaleString(),
                         positionPrice: p.positionPrice.toString(),
                         resultPrice: p.resultPrice.toString(),
-                        PnL: totalPnL
+                        PnL: ((isUserWin ? 1 : -1) * (totalPnL / LAMPORTS_PER_SOL)).toLocaleString()
                     }
                 })).then(console.table);
             } else {
@@ -200,8 +200,6 @@ require('yargs/yargs')(process.argv.slice(2))
             tx.add(setupDeposit.ix);
             const txHash = await sendAndConfirmTransaction(connection, tx, [wallet.payer, OPERATOR]);
             explorer({ tx: txHash })
-            const newAccountData = (await getAccount(connection, setupDeposit.userAccount))
-            console.log("Balance:", newAccountData.amount);
         }
     })
     .command({
@@ -214,7 +212,7 @@ require('yargs/yargs')(process.argv.slice(2))
             const [userAccount] = getUserVaultAddress(wallet.publicKey, CURRENCY.publicKey, program.programId);
             try {
                 const userAccountData = await getAccount(connection, userAccount);
-                console.log("Balance:", userAccountData.amount);
+                console.log("Balance:", (userAccountData.amount / BigInt(LAMPORTS_PER_SOL)).toLocaleString());
             } catch (error) {
                 console.error(error);
                 console.log('=====')
