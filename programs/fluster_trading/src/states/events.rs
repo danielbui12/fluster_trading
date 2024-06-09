@@ -24,8 +24,8 @@ pub struct OrderPlaced {
     pub trade_direction: u8,
     /// destination timestamp
     pub destination_timestamp: u64,
-    /// thread id
-    pub thread_id: Vec<u8>,
+    // /// thread id
+    // pub thread_id: Vec<u8>,
 }
 
 /// Emitted when place an betting order

@@ -1,6 +1,7 @@
 {
     "scripts": {
-        "setup": "bash bin/setup.sh",
+        "setup:env": "bash bin/setup.sh",
+        "setup:node": "anchor run node",
         "test": "anchor test --skip-local-validator",
         "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
         "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
@@ -8,18 +9,19 @@
     "dependencies": {
         "@clockwork-xyz/sdk": "^0.3.4",
         "@coral-xyz/anchor": "^0.29.0",
-        "@pythnetwork/client": "^2.21.0",
-        "@solana/spl-token": "^0.4.0",
         "@metaplex-foundation/js": "^0.18.3",
         "@metaplex-foundation/mpl-token-metadata": "^2.9.0",
+        "@pythnetwork/client": "^2.21.0",
+        "@solana/spl-token": "^0.4.0",
         "@solana/web3.js": "^1.90.0",
-        "chai-as-promised": "^7.1.2"
+        "chai-as-promised": "^7.1.2",
+        "cron": "^3.1.7"
     },
     "devDependencies": {
         "@types/bn.js": "^5.1.0",
         "@types/chai": "^4.3.0",
-        "@types/mocha": "^9.0.0",
         "@types/chai-as-promised": "^7.1.8",
+        "@types/mocha": "^9.0.0",
         "chai": "^4.3.4",
         "mocha": "^9.0.3",
         "prettier": "^2.6.2",

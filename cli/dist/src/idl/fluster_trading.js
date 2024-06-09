@@ -593,26 +593,11 @@ exports.IDL = {
                     ]
                 },
                 {
-                    "name": "thread",
-                    "isMut": true,
-                    "isSigner": false,
-                    "docs": [
-                        "Address to assign to the newly created thread."
-                    ]
-                },
-                {
-                    "name": "clockworkProgram",
-                    "isMut": false,
-                    "isSigner": false,
-                    "docs": [
-                        "The Clockwork thread program."
-                    ]
-                },
-                {
                     "name": "tokenProgram",
                     "isMut": false,
                     "isSigner": false,
                     "docs": [
+                        "The Clockwork thread program.",
                         "The token program"
                     ]
                 },
@@ -626,10 +611,6 @@ exports.IDL = {
                 }
             ],
             "args": [
-                {
-                    "name": "threadId",
-                    "type": "bytes"
-                },
                 {
                     "name": "amount",
                     "type": "u64"
@@ -661,6 +642,14 @@ exports.IDL = {
             ],
             "accounts": [
                 {
+                    "name": "payer",
+                    "isMut": true,
+                    "isSigner": true,
+                    "docs": [
+                        "The user performing the trading"
+                    ]
+                },
+                {
                     "name": "owner",
                     "isMut": true,
                     "isSigner": false,
@@ -687,22 +676,6 @@ exports.IDL = {
                     "isSigner": false,
                     "docs": [
                         "betting state"
-                    ]
-                },
-                {
-                    "name": "thread",
-                    "isMut": true,
-                    "isSigner": false,
-                    "docs": [
-                        "The thread to reset."
-                    ]
-                },
-                {
-                    "name": "clockworkProgram",
-                    "isMut": false,
-                    "isSigner": false,
-                    "docs": [
-                        "The Clockwork thread program."
                     ]
                 },
                 {
@@ -799,22 +772,6 @@ exports.IDL = {
                     "isSigner": false,
                     "docs": [
                         "betting state"
-                    ]
-                },
-                {
-                    "name": "thread",
-                    "isMut": true,
-                    "isSigner": false,
-                    "docs": [
-                        "The thread to reset."
-                    ]
-                },
-                {
-                    "name": "clockworkProgram",
-                    "isMut": false,
-                    "isSigner": false,
-                    "docs": [
-                        "The Clockwork thread program."
                     ]
                 },
                 {
@@ -919,22 +876,6 @@ exports.IDL = {
                     "isSigner": false,
                     "docs": [
                         "The FT mint"
-                    ]
-                },
-                {
-                    "name": "thread",
-                    "isMut": true,
-                    "isSigner": false,
-                    "docs": [
-                        "The thread to reset."
-                    ]
-                },
-                {
-                    "name": "clockworkProgram",
-                    "isMut": false,
-                    "isSigner": false,
-                    "docs": [
-                        "The Clockwork thread program."
                     ]
                 },
                 {
@@ -1048,13 +989,6 @@ exports.IDL = {
                 "fields": [
                     {
                         "name": "poolState",
-                        "docs": [
-                            "Which betting belongs"
-                        ],
-                        "type": "publicKey"
-                    },
-                    {
-                        "name": "thread",
                         "docs": [
                             "Which betting belongs"
                         ],
@@ -1293,11 +1227,6 @@ exports.IDL = {
                 {
                     "name": "destinationTimestamp",
                     "type": "u64",
-                    "index": false
-                },
-                {
-                    "name": "threadId",
-                    "type": "bytes",
                     "index": false
                 }
             ]

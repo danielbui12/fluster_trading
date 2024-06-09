@@ -141,7 +141,7 @@ pub mod fluster_trading {
     ///
     pub fn betting(
         ctx: Context<Betting>,
-        thread_id: Vec<u8>,
+        // thread_id: Vec<u8>,
         amount: u64,
         price_slippage: u64,
         destination_timestamp: i64,
@@ -149,7 +149,7 @@ pub mod fluster_trading {
     ) -> Result<()> {
         instructions::betting(
             ctx,
-            thread_id,
+            // thread_id,
             amount,
             price_slippage,
             destination_timestamp,

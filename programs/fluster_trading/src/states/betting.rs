@@ -10,8 +10,8 @@ pub const BETTING_STATE_SEED: &str = "betting_state";
 pub struct BettingState {
     /// Which betting belongs
     pub pool_state: Pubkey,
-    /// Which betting belongs
-    pub thread: Pubkey,
+    // /// Which betting belongs
+    // pub thread: Pubkey,
     /// owner of this account
     pub owner: Pubkey,
     /// amount of bet
@@ -31,7 +31,7 @@ impl BettingState {
         &mut self,
         pool_state: Pubkey,
         owner: Pubkey,
-        thread: Pubkey,
+        // thread: Pubkey,
         trade_direction: u8,
         bet_amount: u64,
         position_price: u64,
@@ -44,6 +44,6 @@ impl BettingState {
         self.destination_timestamp = destination_timestamp;
         self.result_price = 0;
         self.owner = owner;
-        self.thread = thread;
+        // self.thread = thread;
     }
 }

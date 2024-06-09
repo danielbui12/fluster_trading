@@ -11,7 +11,7 @@ import { Betting } from "./sdk/type";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { ClockworkProvider } from "@clockwork-xyz/sdk";
 import { calculatePriceChange, timestampToEpochTime } from "./sdk/utils";
-import { waitForThreadExec } from "./sdk/cloclwork";
+import { waitForFlusterThreadExec } from "./sdk/cloclwork";
 
 describe("Fluster Trading test", () => {
     anchor.setProvider(anchor.AnchorProvider.env());
@@ -126,7 +126,7 @@ describe("Fluster Trading test", () => {
         });
 
         it("Wait for revelation", async () => {
-            await waitForThreadExec(clockworkProvider, userBettingData.thread);
+            await waitForFlusterThreadExec(program, userBettingAddress);
             userBettingData = await program.account.bettingState.fetch(userBettingAddress) as unknown as Betting;
             console.log(userBettingData);
 
@@ -148,13 +148,13 @@ describe("Fluster Trading test", () => {
                 program,
                 clockworkProvider,
                 user,
-                NATIVE_MINT,
+                userBettingAddress,
                 currency.publicKey,
             )
             const setupCloseBetting = await closeBetting(
                 program,
                 user,
-                NATIVE_MINT,
+                userBettingAddress,
                 currency.publicKey,
             )
             await expectIxToSucceed([
@@ -170,7 +170,6 @@ describe("Fluster Trading test", () => {
                 expect(error.message).to.be.eq(`Account does not exist or has no data ${userBettingAddress}`)
             }
         });
-
 
         it("Betting again", async () => {
             const threadId = Math.floor(Math.random() * 1_000_000);

@@ -118,7 +118,7 @@ require('yargs/yargs')(process.argv.slice(2))
                 return {
                     positionAddress: p.publicKey.toString(),
                     poolAddress: (0, utils_1.shortenAddress)(p.account.poolState.toString()),
-                    threadId: (0, utils_1.shortenAddress)(p.account.thread.toString()),
+                    // threadId: shortenAddress(p.account.thread.toString()),
                     amountIn: (p.account.betAmount.toNumber() / web3_js_1.LAMPORTS_PER_SOL).toLocaleString(),
                     positionPrice: p.account.positionPrice.toString(),
                     resultPrice: p.account.resultPrice.toString(),
@@ -257,11 +257,10 @@ require('yargs/yargs')(process.argv.slice(2))
     desc: 'await the order',
     builder: (yargs) => yargs,
     handler: async (argv) => {
-        const { program, provider, wallet } = preLoad();
-        const clockworkProvider = sdk_1.ClockworkProvider.fromAnchorProvider(provider);
-        const userBettingData = await program.account.bettingState.fetch(argv.position_address);
-        await (0, cloclwork_1.waitForThreadExec)(clockworkProvider, userBettingData.thread);
-        console.log("Done");
+        const { program } = preLoad();
+        console.log("Wait for", argv.position_address, "fulfillment");
+        await (0, cloclwork_1.waitForFlusterThreadExec)(program, argv.position_address);
+        console.log("Order fulfilled");
     }
 })
     .command({

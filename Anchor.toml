@@ -26,6 +26,7 @@ wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -r tsconfig-paths/register -t 1000000 tests/**/*.test.ts"
+node = "yarn ts-node -r tsconfig-paths/register tests/nodes/index.ts" 
 exec = "yarn ts-node -r tsconfig-paths/register clients/**/*.ts"
 
 [test]

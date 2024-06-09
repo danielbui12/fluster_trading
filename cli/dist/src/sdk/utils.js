@@ -48,7 +48,7 @@ const shortenAddress = (address) => {
 };
 exports.shortenAddress = shortenAddress;
 const explorer = ({ tx, account, devnet = true }) => {
-    let url = `https://solscan.io`;
+    let url = `https://explorer.solana.com`;
     if (!tx && !account) {
         return '';
     }

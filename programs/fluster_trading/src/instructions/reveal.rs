@@ -4,16 +4,16 @@ use crate::utils::get_token_price;
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program;
 use anchor_spl::{token::Token, token_interface::Mint};
-use clockwork_sdk::state::Thread;
+// use clockwork_sdk::state::Thread;
 
 #[derive(Accounts)]
 pub struct Reveal<'info> {
-    // /// The user performing the trading
-    // #[account(mut)]
-    // pub payer: Signer<'info>,
-    //
-    /// The owner performing the trading
+    /// The user performing the trading
     #[account(mut)]
+    pub payer: Signer<'info>,
+
+    /// The owner performing the trading
+    #[account(mut, address = user_betting.load()?.owner)]
     pub owner: SystemAccount<'info>,
 
     /// CHECK: authority
@@ -32,18 +32,18 @@ pub struct Reveal<'info> {
     /// betting state
     #[account(
         mut,
-        constraint = user_betting.load()?.pool_state == pool_state.key()  && user_betting.load()?.owner == owner.key()
+        constraint = user_betting.load()?.pool_state == pool_state.key()
     )]
     pub user_betting: AccountLoader<'info, BettingState>,
 
-    /// The thread to reset.
-    #[account(mut, address = user_betting.load()?.thread)]
-    pub thread: Account<'info, Thread>,
-
-    /// The Clockwork thread program.
-    #[account(address = clockwork_sdk::ID)]
-    pub clockwork_program: Program<'info, clockwork_sdk::ThreadProgram>,
-
+    // /// The thread to reset.
+    // #[account(mut, address = user_betting.load()?.thread)]
+    // pub thread: Account<'info, Thread>,
+    //
+    // /// The Clockwork thread program.
+    // #[account(address = clockwork_sdk::ID)]
+    // pub clockwork_program: Program<'info, clockwork_sdk::ThreadProgram>,
+    //
     /// CHECK: token oracle
     #[account(
         address = pool_state.load()?.token_oracle

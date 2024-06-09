@@ -8,11 +8,9 @@ import {
     SYSVAR_RENT_PUBKEY,
 } from "@solana/web3.js";
 import {
-    ASSOCIATED_TOKEN_PROGRAM_ID,
     NATIVE_MINT,
-    TOKEN_PROGRAM_ID, getAccount, getAssociatedTokenAddressSync,
+    TOKEN_PROGRAM_ID, getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
-import { accountExist } from "./web3";
 import {
     getAuthAddress,
     getPoolAddress,
@@ -171,13 +169,19 @@ export async function betting(
         poolAddress,
         program.programId,
     )
-    const [thread] = clockworkProvider.getThreadPDA(
-        authority,
-        config.threadId,
-    )
+    // const [thread] = clockworkProvider.getThreadPDA(
+    //     authority,
+    //     config.threadId,
+    // )
 
     const ix = await program.methods
-        .betting(Buffer.from(config.threadId), config.amountIn, config.priceSlippage, config.destinationTimestamp, config.tradeDirection)
+        .betting(
+            // Buffer.from(config.threadId),
+            config.amountIn,
+            config.priceSlippage,
+            config.destinationTimestamp,
+            config.tradeDirection
+        )
         .accounts({
             payer: payer.publicKey,
             authority: authority,
@@ -187,8 +191,8 @@ export async function betting(
             userBetting: userBettingState,
             tokenOracle: poolState.tokenOracle,
             tokenMint: ftTokenMint,
-            thread: thread,
-            clockworkProgram: clockworkProvider.threadProgram.programId,
+            // thread: thread,
+            // clockworkProgram: clockworkProvider.threadProgram.programId,
             tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: SystemProgram.programId,
         })
@@ -199,38 +203,59 @@ export async function betting(
     return { ix, userBettingState };
 }
 
+export async function reveal(
+    program: Program<FlusterTrading>,
+    payer: Signer,
+    positionAddress: PublicKey,
+    ftTokenMint: PublicKey,
+    confirmOptions?: ConfirmOptions,
+) {
+    const [authority] = getAuthAddress(
+        program.programId
+    );
+    const userBettingData = await program.account.bettingState.fetch(positionAddress);
+    const poolStateData = await program.account.poolState.fetch(userBettingData.poolState);
+
+    const ix = await program.methods
+        .reveal()
+        .accounts({
+            payer: payer.publicKey,
+            owner: userBettingData.owner,
+            authority: authority,
+            poolState: userBettingData.poolState,
+            userBetting: positionAddress,
+            tokenOracle: poolStateData.tokenOracle,
+            tokenMint: ftTokenMint,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+        })
+        .instruction();
+
+    return { ix };
+}
+
 export async function complete(
     program: Program<FlusterTrading>,
     clockworkProvider: ClockworkProvider,
     payer: Signer,
-    tradingToken: PublicKey,
+    positionAddress: PublicKey,
     ftTokenMint: PublicKey,
     confirmOptions?: ConfirmOptions,
 ) {
-    const [poolAddress] = getPoolAddress(
-        tradingToken,
-        program.programId
-    );
-
     const [authority] = getAuthAddress(
         program.programId
     );
+    const userBettingData = await program.account.bettingState.fetch(positionAddress);
     const [userAccount] = getUserVaultAddress(
         payer.publicKey,
         ftTokenMint,
         program.programId
     );
     const [vault] = getPoolVaultAddress(
-        poolAddress,
+        userBettingData.poolState,
         ftTokenMint,
         program.programId
     );
-    const [userBettingState] = getUserBettingState(
-        payer.publicKey,
-        poolAddress,
-        program.programId,
-    )
-    const userBettingData = await program.account.bettingState.fetch(userBettingState);
 
     const ix = await program.methods
         .complete()
@@ -238,13 +263,13 @@ export async function complete(
             payer: payer.publicKey,
             owner: userBettingData.owner,
             authority: authority,
-            poolState: poolAddress,
+            poolState: userBettingData.poolState,
             userAccount: userAccount,
             tokenVault: vault,
-            userBetting: userBettingState,
+            userBetting: positionAddress,
             tokenMint: ftTokenMint,
-            thread: userBettingData.thread,
-            clockworkProgram: clockworkProvider.threadProgram.programId,
+            // thread: userBettingData.thread,
+            // clockworkProgram: clockworkProvider.threadProgram.programId,
             tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: SystemProgram.programId,
         })
@@ -255,47 +280,37 @@ export async function complete(
     return { ix };
 }
 
-
 export async function closeBetting(
     program: Program<FlusterTrading>,
     payer: Signer,
-    tradingToken: PublicKey,
+    positionAddress: PublicKey,
     ftTokenMint: PublicKey,
     confirmOptions?: ConfirmOptions,
 ) {
-    const [poolAddress] = getPoolAddress(
-        tradingToken,
-        program.programId
-    );
-
     const [authority] = getAuthAddress(
         program.programId
     );
+    const userBettingData = await program.account.bettingState.fetch(positionAddress);
     const [userAccount] = getUserVaultAddress(
         payer.publicKey,
         ftTokenMint,
         program.programId
     );
     const [vault] = getPoolVaultAddress(
-        poolAddress,
+        userBettingData.poolState,
         ftTokenMint,
         program.programId
     );
-    const [userBettingState] = getUserBettingState(
-        payer.publicKey,
-        poolAddress,
-        program.programId,
-    )
 
     const ix = await program.methods
         .closeBetting()
         .accounts({
             payer: payer.publicKey,
             authority: authority,
-            poolState: poolAddress,
+            poolState: userBettingData.poolState,
             userAccount: userAccount,
             tokenVault: vault,
-            userBetting: userBettingState,
+            userBetting: positionAddress,
             tokenMint: ftTokenMint,
             tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: SystemProgram.programId,

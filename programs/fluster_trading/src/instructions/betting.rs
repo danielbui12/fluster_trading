@@ -4,16 +4,16 @@ use crate::states::*;
 use crate::utils::token::*;
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program;
-use anchor_lang::InstructionData;
+// use anchor_lang::InstructionData;
 use anchor_spl::{
     token::Token,
     token_interface::{Mint, TokenAccount},
 };
-use clockwork_sdk::state::Thread;
-use spl_memo::solana_program::instruction::Instruction;
+// use clockwork_sdk::state::Thread;
+// use spl_memo::solana_program::instruction::Instruction;
 
 #[derive(Accounts)]
-#[instruction(thread_id: Vec<u8>)]
+// #[instruction(thread_id: Vec<u8>)]
 pub struct Betting<'info> {
     /// The user performing the trading
     #[account(mut)]
@@ -77,14 +77,14 @@ pub struct Betting<'info> {
     )]
     pub token_mint: Box<InterfaceAccount<'info, Mint>>,
 
-    /// Address to assign to the newly created thread.
-    #[account(mut, address = Thread::pubkey(authority.key(), thread_id))]
-    pub thread: SystemAccount<'info>,
-
+    // /// Address to assign to the newly created thread.
+    // #[account(mut, address = Thread::pubkey(authority.key(), thread_id))]
+    // pub thread: SystemAccount<'info>,
+    //
     /// The Clockwork thread program.
-    #[account(address = clockwork_sdk::ID)]
-    pub clockwork_program: Program<'info, clockwork_sdk::ThreadProgram>,
-
+    // #[account(address = clockwork_sdk::ID)]
+    // pub clockwork_program: Program<'info, clockwork_sdk::ThreadProgram>,
+    //
     /// The token program
     pub token_program: Program<'info, Token>,
 
@@ -94,7 +94,7 @@ pub struct Betting<'info> {
 
 pub fn betting(
     ctx: Context<Betting>,
-    thread_id: Vec<u8>,
+    // thread_id: Vec<u8>,
     amount_in: u64,
     price_slippage: u64,
     destination_timestamp: i64,
@@ -144,57 +144,57 @@ pub fn betting(
         actual_amount,
         ctx.accounts.token_mint.decimals,
         true,
-        &[&[crate::AUTH_SEED.as_bytes(), &[pool_state.auth_bump]]],
+        auth,
     )?;
 
     let user_betting = &mut ctx.accounts.user_betting.load_init()?;
     user_betting.initialize(
         pool_id,
         ctx.accounts.payer.key(),
-        ctx.accounts.thread.key(),
+        // ctx.accounts.thread.key(),
         trade_direction,
         amount_in,
         current_token_price,
         destination_timestamp as u64,
     );
 
-    // 1️⃣ Prepare an instruction to be automated.
-    let target_ix = Instruction {
-        program_id: crate::id(),
-        accounts: crate::accounts::Reveal {
-            owner: ctx.accounts.payer.key(),
-            authority: ctx.accounts.authority.key(),
-            pool_state: ctx.accounts.pool_state.key(),
-            user_betting: ctx.accounts.user_betting.key(),
-            thread: ctx.accounts.thread.key(),
-            clockwork_program: ctx.accounts.clockwork_program.key(),
-            token_oracle: ctx.accounts.token_oracle.key(),
-            token_mint: ctx.accounts.token_mint.key(),
-            token_program: ctx.accounts.token_program.key(),
-            system_program: ctx.accounts.system_program.key(),
-        }
-        .to_account_metas(Some(true)),
-        data: crate::instruction::Reveal {}.data(),
-    };
-    let trigger = clockwork_sdk::state::Trigger::Timestamp {
-        unix_ts: destination_timestamp,
-    };
-    clockwork_sdk::cpi::thread_create(
-        CpiContext::new_with_signer(
-            ctx.accounts.clockwork_program.to_account_info(),
-            clockwork_sdk::cpi::ThreadCreate {
-                payer: ctx.accounts.payer.to_account_info(),
-                system_program: ctx.accounts.system_program.to_account_info(),
-                thread: ctx.accounts.thread.to_account_info(),
-                authority: ctx.accounts.authority.to_account_info(),
-            },
-            auth,
-        ),
-        crate::CLOCK_WORK_FEE,
-        thread_id.clone(),
-        vec![target_ix.into()],
-        trigger,
-    )?;
+    // // 1️⃣ Prepare an instruction to be automated.
+    // let target_ix = Instruction {
+    //     program_id: crate::id(),
+    //     accounts: crate::accounts::Reveal {
+    //         owner: ctx.accounts.payer.key(),
+    //         authority: ctx.accounts.authority.key(),
+    //         pool_state: ctx.accounts.pool_state.key(),
+    //         user_betting: ctx.accounts.user_betting.key(),
+    //         thread: ctx.accounts.thread.key(),
+    //         clockwork_program: ctx.accounts.clockwork_program.key(),
+    //         token_oracle: ctx.accounts.token_oracle.key(),
+    //         token_mint: ctx.accounts.token_mint.key(),
+    //         token_program: ctx.accounts.token_program.key(),
+    //         system_program: ctx.accounts.system_program.key(),
+    //     }
+    //     .to_account_metas(Some(true)),
+    //     data: crate::instruction::Reveal {}.data(),
+    // };
+    // let trigger = clockwork_sdk::state::Trigger::Now {
+    //     // unix_ts: destination_timestamp,
+    // };
+    // clockwork_sdk::cpi::thread_create(
+    //     CpiContext::new_with_signer(
+    //         ctx.accounts.clockwork_program.to_account_info(),
+    //         clockwork_sdk::cpi::ThreadCreate {
+    //             payer: ctx.accounts.payer.to_account_info(),
+    //             system_program: ctx.accounts.system_program.to_account_info(),
+    //             thread: ctx.accounts.thread.to_account_info(),
+    //             authority: ctx.accounts.authority.to_account_info(),
+    //         },
+    //         auth,
+    //     ),
+    //     crate::CLOCK_WORK_FEE,
+    //     thread_id.clone(),
+    //     vec![target_ix.into()],
+    //     trigger,
+    // )?;
 
     emit!(OrderPlaced {
         betting_id: ctx.accounts.user_betting.key(),
@@ -203,7 +203,7 @@ pub fn betting(
         trade_direction: trade_direction,
         amount_in: amount_in,
         destination_timestamp: destination_timestamp as u64,
-        thread_id
+        // thread_id
     });
 
     Ok(())

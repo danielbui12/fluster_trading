@@ -14,9 +14,10 @@ Clone the repository and test the program.
 git clone https://github.com/danielbui12/fluster_trading
 cd fluster_trading
 yarn install
-cargo install -f --locked --git https://github.com/danielbui12/clockwork clockwork-cli
-yarn setup
-yarn test test
+# cargo install -f --locked --git https://github.com/danielbui12/clockwork clockwork-cli
+yarn setup:env
+yarn setup:node
+yarn test
 ```
 
 ## Fork program on mainnet

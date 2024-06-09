@@ -17,7 +17,7 @@ import { ClockworkProvider } from "@clockwork-xyz/sdk";
 import { parsePriceData } from "@pythnetwork/client";
 import { protocolFee } from "./sdk/fee";
 import { getBlockTimestamp } from "./sdk/web3";
-import { waitForThreadExec } from "./sdk/cloclwork";
+import { waitForFlusterThreadExec } from "./sdk/cloclwork";
 
 const preLoad = () => {
     const key = JSON.parse(fs.readFileSync(config.WALLET_URI, { encoding: 'utf-8' }));
@@ -130,7 +130,7 @@ require('yargs/yargs')(process.argv.slice(2))
                     return {
                         positionAddress: p.publicKey.toString(),
                         poolAddress: shortenAddress(p.account.poolState.toString()),
-                        threadId: shortenAddress(p.account.thread.toString()),
+                        // threadId: shortenAddress(p.account.thread.toString()),
                         amountIn: (p.account.betAmount.toNumber() / LAMPORTS_PER_SOL).toLocaleString(),
                         positionPrice: p.account.positionPrice.toString(),
                         resultPrice: p.account.resultPrice.toString(),
@@ -293,11 +293,10 @@ require('yargs/yargs')(process.argv.slice(2))
         desc: 'await the order',
         builder: (yargs) => yargs,
         handler: async (argv) => {
-            const { program, provider, wallet } = preLoad();
-            const clockworkProvider = ClockworkProvider.fromAnchorProvider(provider);
-            const userBettingData = await program.account.bettingState.fetch(argv.position_address)
-            await waitForThreadExec(clockworkProvider, userBettingData.thread);
-            console.log("Done");
+            const { program } = preLoad();
+            console.log("Wait for", argv.position_address, "fulfillment")
+            await waitForFlusterThreadExec(program, argv.position_address);
+            console.log("Order fulfilled");
         }
     })
     .command({

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.closeBetting = exports.complete = exports.betting = exports.deposit = exports.initialize = exports.TradeDirection = void 0;
+exports.closeBetting = exports.complete = exports.reveal = exports.betting = exports.deposit = exports.initialize = exports.TradeDirection = void 0;
 const web3_js_1 = require("@solana/web3.js");
 const spl_token_1 = require("@solana/spl-token");
 const pda_1 = require("./pda");
@@ -73,9 +73,14 @@ async function betting(program, clockworkProvider, payer, tradingToken, ftTokenM
     const [userAccount] = (0, pda_1.getUserVaultAddress)(payer.publicKey, ftTokenMint, program.programId);
     const [vault] = (0, pda_1.getPoolVaultAddress)(poolAddress, ftTokenMint, program.programId);
     const [userBettingState] = (0, pda_1.getUserBettingState)(payer.publicKey, poolAddress, program.programId);
-    const [thread] = clockworkProvider.getThreadPDA(authority, config.threadId);
+    // const [thread] = clockworkProvider.getThreadPDA(
+    //     authority,
+    //     config.threadId,
+    // )
     const ix = await program.methods
-        .betting(Buffer.from(config.threadId), config.amountIn, config.priceSlippage, config.destinationTimestamp, config.tradeDirection)
+        .betting(
+    // Buffer.from(config.threadId),
+    config.amountIn, config.priceSlippage, config.destinationTimestamp, config.tradeDirection)
         .accounts({
         payer: payer.publicKey,
         authority: authority,
@@ -85,8 +90,8 @@ async function betting(program, clockworkProvider, payer, tradingToken, ftTokenM
         userBetting: userBettingState,
         tokenOracle: poolState.tokenOracle,
         tokenMint: ftTokenMint,
-        thread: thread,
-        clockworkProgram: clockworkProvider.threadProgram.programId,
+        // thread: thread,
+        // clockworkProgram: clockworkProvider.threadProgram.programId,
         tokenProgram: spl_token_1.TOKEN_PROGRAM_ID,
         systemProgram: web3_js_1.SystemProgram.programId,
     })
@@ -96,6 +101,27 @@ async function betting(program, clockworkProvider, payer, tradingToken, ftTokenM
     return { ix, userBettingState };
 }
 exports.betting = betting;
+async function reveal(program, payer, positionAddress, ftTokenMint, confirmOptions) {
+    const [authority] = (0, pda_1.getAuthAddress)(program.programId);
+    const userBettingData = await program.account.bettingState.fetch(positionAddress);
+    const poolStateData = await program.account.poolState.fetch(userBettingData.poolState);
+    const ix = await program.methods
+        .reveal()
+        .accounts({
+        payer: payer.publicKey,
+        owner: userBettingData.owner,
+        authority: authority,
+        poolState: userBettingData.poolState,
+        userBetting: positionAddress,
+        tokenOracle: poolStateData.tokenOracle,
+        tokenMint: ftTokenMint,
+        tokenProgram: spl_token_1.TOKEN_PROGRAM_ID,
+        systemProgram: web3_js_1.SystemProgram.programId,
+    })
+        .instruction();
+    return { ix };
+}
+exports.reveal = reveal;
 async function complete(program, clockworkProvider, payer, positionAddress, ftTokenMint, confirmOptions) {
     const [authority] = (0, pda_1.getAuthAddress)(program.programId);
     const userBettingData = await program.account.bettingState.fetch(positionAddress);
@@ -112,8 +138,8 @@ async function complete(program, clockworkProvider, payer, positionAddress, ftTo
         tokenVault: vault,
         userBetting: positionAddress,
         tokenMint: ftTokenMint,
-        thread: userBettingData.thread,
-        clockworkProgram: clockworkProvider.threadProgram.programId,
+        // thread: userBettingData.thread,
+        // clockworkProgram: clockworkProvider.threadProgram.programId,
         tokenProgram: spl_token_1.TOKEN_PROGRAM_ID,
         systemProgram: web3_js_1.SystemProgram.programId,
     })

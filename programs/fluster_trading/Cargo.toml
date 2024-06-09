@@ -30,7 +30,7 @@ spl-memo = "4.0.0"
 uint = "0.9.1"
 solana-security-txt = "1.1.1"
 pyth-sdk-solana = "0.10.1"
-clockwork-sdk = { git = "https://github.com/danielbui12/clockwork" } 
+# clockwork-sdk = { git = "https://github.com/danielbui12/clockwork" } 
 # clockwork-sdk = "2.0.19" ## https://github.com/clockwork-xyz/clockwork/issues/271
 # raydium-amm-anchor = { path = "../../modules/raydium-amm-anchor", features = [] }
 

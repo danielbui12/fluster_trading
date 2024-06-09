@@ -53,7 +53,7 @@ export const explorer = ({
     account?: string,
     devnet?: boolean
 }) => {
-    let url = `https://solscan.io`
+    let url = `https://explorer.solana.com`
     if (!tx && !account) {
         return ''
     }
@@ -71,5 +71,5 @@ export const explorer = ({
 }
 
 export const calculatePnL = () => {
-    
+
 }

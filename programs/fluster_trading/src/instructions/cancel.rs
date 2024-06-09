@@ -8,7 +8,7 @@ use anchor_spl::{
     token::Token,
     token_interface::{Mint, TokenAccount},
 };
-use clockwork_sdk::state::Thread;
+// use clockwork_sdk::state::Thread;
 
 #[derive(Accounts)]
 pub struct Cancel<'info> {
@@ -59,14 +59,14 @@ pub struct Cancel<'info> {
     )]
     pub user_betting: AccountLoader<'info, BettingState>,
 
-    /// The thread to reset.
-    #[account(mut, constraint = thread.authority.eq(&authority.key()))]
-    pub thread: Account<'info, Thread>,
-
-    /// The Clockwork thread program.
-    #[account(address = clockwork_sdk::ID)]
-    pub clockwork_program: Program<'info, clockwork_sdk::ThreadProgram>,
-
+    // /// The thread to reset.
+    // #[account(mut, constraint = thread.authority.eq(&authority.key()))]
+    // pub thread: Account<'info, Thread>,
+    //
+    // /// The Clockwork thread program.
+    // #[account(address = clockwork_sdk::ID)]
+    // pub clockwork_program: Program<'info, clockwork_sdk::ThreadProgram>,
+    //
     /// CHECK: token oracle
     #[account(
         address = pool_state.load()?.token_oracle
@@ -99,16 +99,16 @@ pub fn cancel(ctx: Context<crate::Cancel>) -> Result<()> {
         return err!(ErrorCode::NotApproved);
     }
 
-    // close thread
-    clockwork_sdk::cpi::thread_delete(CpiContext::new_with_signer(
-        ctx.accounts.clockwork_program.to_account_info(),
-        clockwork_sdk::cpi::ThreadDelete {
-            authority: ctx.accounts.authority.to_account_info(),
-            close_to: ctx.accounts.payer.to_account_info(),
-            thread: ctx.accounts.thread.to_account_info(),
-        },
-        &[&[crate::AUTH_SEED.as_bytes(), &[pool_state.auth_bump]]],
-    ))?;
+    // // close thread
+    // clockwork_sdk::cpi::thread_delete(CpiContext::new_with_signer(
+    //     ctx.accounts.clockwork_program.to_account_info(),
+    //     clockwork_sdk::cpi::ThreadDelete {
+    //         authority: ctx.accounts.authority.to_account_info(),
+    //         close_to: ctx.accounts.payer.to_account_info(),
+    //         thread: ctx.accounts.thread.to_account_info(),
+    //     },
+    //     &[&[crate::AUTH_SEED.as_bytes(), &[pool_state.auth_bump]]],
+    // ))?;
 
     // transfer token back to user
     let auth: &[&[&[u8]]] = &[&[crate::AUTH_SEED.as_bytes(), &[pool_state.auth_bump]]];

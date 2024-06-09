@@ -1,5 +1,5 @@
 import { Program, BN } from "@coral-xyz/anchor";
-import { FlusterTrading } from "../../../target/types/fluster_trading";
+import { FlusterTrading } from "../idl/fluster_trading";
 import {
     ConfirmOptions,
     PublicKey,
@@ -168,13 +168,19 @@ export async function betting(
         poolAddress,
         program.programId,
     )
-    const [thread] = clockworkProvider.getThreadPDA(
-        authority,
-        config.threadId,
-    )
+    // const [thread] = clockworkProvider.getThreadPDA(
+    //     authority,
+    //     config.threadId,
+    // )
 
     const ix = await program.methods
-        .betting(Buffer.from(config.threadId), config.amountIn, config.priceSlippage, config.destinationTimestamp, config.tradeDirection)
+        .betting(
+            // Buffer.from(config.threadId),
+            config.amountIn,
+            config.priceSlippage,
+            config.destinationTimestamp,
+            config.tradeDirection
+        )
         .accounts({
             payer: payer.publicKey,
             authority: authority,
@@ -184,8 +190,8 @@ export async function betting(
             userBetting: userBettingState,
             tokenOracle: poolState.tokenOracle,
             tokenMint: ftTokenMint,
-            thread: thread,
-            clockworkProgram: clockworkProvider.threadProgram.programId,
+            // thread: thread,
+            // clockworkProgram: clockworkProvider.threadProgram.programId,
             tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: SystemProgram.programId,
         })
@@ -194,6 +200,37 @@ export async function betting(
     // const txHash = await sendAndConfirmIx(program.provider.connection, [ix], [payer], undefined, confirmOptions);
     // console.log("betting tx: ", txHash);
     return { ix, userBettingState };
+}
+
+export async function reveal(
+    program: Program<FlusterTrading>,
+    payer: Signer,
+    positionAddress: PublicKey,
+    ftTokenMint: PublicKey,
+    confirmOptions?: ConfirmOptions,
+) {
+    const [authority] = getAuthAddress(
+        program.programId
+    );
+    const userBettingData = await program.account.bettingState.fetch(positionAddress);
+    const poolStateData = await program.account.poolState.fetch(userBettingData.poolState);
+
+    const ix = await program.methods
+        .reveal()
+        .accounts({
+            payer: payer.publicKey,
+            owner: userBettingData.owner,
+            authority: authority,
+            poolState: userBettingData.poolState,
+            userBetting: positionAddress,
+            tokenOracle: poolStateData.tokenOracle,
+            tokenMint: ftTokenMint,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+        })
+        .instruction();
+
+    return { ix };
 }
 
 export async function complete(
@@ -230,8 +267,8 @@ export async function complete(
             tokenVault: vault,
             userBetting: positionAddress,
             tokenMint: ftTokenMint,
-            thread: userBettingData.thread,
-            clockworkProgram: clockworkProvider.threadProgram.programId,
+            // thread: userBettingData.thread,
+            // clockworkProgram: clockworkProvider.threadProgram.programId,
             tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: SystemProgram.programId,
         })
@@ -241,7 +278,6 @@ export async function complete(
     // console.log("betting tx: ", txHash);
     return { ix };
 }
-
 
 export async function closeBetting(
     program: Program<FlusterTrading>,
