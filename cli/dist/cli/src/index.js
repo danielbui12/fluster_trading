@@ -21,6 +21,7 @@ const sdk_1 = require("@clockwork-xyz/sdk");
 const client_1 = require("@pythnetwork/client");
 const fee_1 = require("./sdk/fee");
 const web3_1 = require("./sdk/web3");
+const cloclwork_1 = require("./sdk/cloclwork");
 const preLoad = () => {
     const key = JSON.parse(fs_1.default.readFileSync(config_json_1.default.WALLET_URI, { encoding: 'utf-8' }));
     const wallet = new anchor_1.Wallet(web3_js_1.Keypair.fromSeed(Uint8Array.from(key.slice(0, 32))));
@@ -76,7 +77,7 @@ require('yargs/yargs')(process.argv.slice(2))
         config_json_1.default.RPC = argv.rpc;
         config_json_1.default.COMMITMENT = argv.commitment;
         config_json_1.default.SLIPPAGE = argv.slippage * const_1.PERCENTAGE_PADDING;
-        fs_1.default.writeFileSync('./config.json', JSON.stringify(config_json_1.default, null, 2));
+        fs_1.default.writeFileSync('./config.json', JSON.stringify(config_json_1.default, null, 4));
     }
 })
     .command({
@@ -96,28 +97,31 @@ require('yargs/yargs')(process.argv.slice(2))
         return true;
     }),
     handler: async (argv) => {
-        const { program, wallet } = preLoad();
+        const { program, wallet, connection } = preLoad();
         if (argv.type === 'position') {
             // advance filter read more at: https://solanacookbook.com/guides/get-program-accounts.html#filters
             const position = await program.account.bettingState.all();
-            const ownerPosition = position.filter((p) => p.account.owner.equals(wallet.publicKey)).map((p) => p.account);
+            const ownerPosition = position.filter((p) => p.account.owner.equals(wallet.publicKey));
             const poolState = {};
             await Promise.all(ownerPosition.map(async (p) => {
-                if (!poolState[p.poolState.toString()]) {
-                    poolState[p.poolState.toString()] = await program.account.poolState.fetch(p.poolState);
+                if (!poolState[p.account.poolState.toString()]) {
+                    poolState[p.account.poolState.toString()] = await program.account.poolState.fetch(p.account.poolState);
                 }
-                const protocolFeeAmount = (0, fee_1.protocolFee)(p.betAmount.toNumber(), poolState[p.poolState.toString()].protocolFeeRate);
-                const tradingFeeAmount = (0, fee_1.protocolFee)(p.betAmount.toNumber(), poolState[p.poolState.toString()].tradingFeeRate);
-                const isUserWin = ('up' in p.tradeDirection && p.resultPrice > p.positionPrice) || ('down' in p.tradeDirection && p.resultPrice < p.positionPrice);
-                const totalPnL = p.resultPrice.toNumber() !== 0 ?
-                    (isUserWin ? p.betAmount.toNumber() * 2 - tradingFeeAmount : protocolFeeAmount + p.betAmount.toNumber()) :
+                const protocolFeeAmount = (0, fee_1.protocolFee)(p.account.betAmount.toNumber(), poolState[p.account.poolState.toString()].protocolFeeRate);
+                const tradingFeeAmount = (0, fee_1.protocolFee)(p.account.betAmount.toNumber(), poolState[p.account.poolState.toString()].tradingFeeRate);
+                const isUserWin = ('up' in p.account.tradeDirection && p.account.resultPrice > p.account.positionPrice) || ('down' in p.account.tradeDirection && p.account.resultPrice < p.account.positionPrice);
+                const totalPnL = p.account.resultPrice.toNumber() !== 0 ?
+                    (isUserWin ? p.account.betAmount.toNumber() * 2 - tradingFeeAmount : protocolFeeAmount + p.account.betAmount.toNumber()) :
                     protocolFeeAmount;
+                console.log(await (0, web3_1.getBlockTimestamp)(connection));
+                console.log(p.account.destinationTimestamp.toString());
                 return {
-                    poolAddress: (0, utils_1.shortenAddress)(p.poolState.toString()),
-                    threadId: (0, utils_1.shortenAddress)(p.thread.toString()),
-                    amountIn: (p.betAmount.toNumber() / web3_js_1.LAMPORTS_PER_SOL).toLocaleString(),
-                    positionPrice: p.positionPrice.toString(),
-                    resultPrice: p.resultPrice.toString(),
+                    positionAddress: p.publicKey.toString(),
+                    poolAddress: (0, utils_1.shortenAddress)(p.account.poolState.toString()),
+                    threadId: (0, utils_1.shortenAddress)(p.account.thread.toString()),
+                    amountIn: (p.account.betAmount.toNumber() / web3_js_1.LAMPORTS_PER_SOL).toLocaleString(),
+                    positionPrice: p.account.positionPrice.toString(),
+                    resultPrice: p.account.resultPrice.toString(),
                     PnL: ((isUserWin ? 1 : -1) * (totalPnL / web3_js_1.LAMPORTS_PER_SOL)).toLocaleString()
                 };
             })).then(console.table);
@@ -188,8 +192,9 @@ require('yargs/yargs')(process.argv.slice(2))
             console.log("Balance:", (userAccountData.amount / BigInt(web3_js_1.LAMPORTS_PER_SOL)).toLocaleString());
         }
         catch (error) {
-            console.error(error);
-            console.log('=====');
+            // console.error(error);
+            // console.log('=====')
+            console.log("Balance: 0");
         }
     }
 })
@@ -242,10 +247,23 @@ require('yargs/yargs')(process.argv.slice(2))
             amountIn: new bn_js_1.BN(argv.amount_in * web3_js_1.LAMPORTS_PER_SOL),
             priceSlippage: new bn_js_1.BN(priceSlippage.toString()),
             destinationTimestamp: new bn_js_1.BN(destinationTimestamp),
-            tradeDirection: argv.direction
+            tradeDirection: argv.direction,
         });
         const txHash = await (0, tx_1.sendAndConfirmIx)(connection, [setupBet.ix], [wallet.payer]);
         (0, utils_1.explorer)({ tx: txHash });
+    }
+})
+    .command({
+    command: 'await <position_address>',
+    aliases: ['await', 'await'],
+    desc: 'await the order',
+    builder: (yargs) => yargs,
+    handler: async (argv) => {
+        const { program, provider, wallet } = preLoad();
+        const clockworkProvider = sdk_1.ClockworkProvider.fromAnchorProvider(provider);
+        const userBettingData = await program.account.bettingState.fetch(argv.position_address);
+        await (0, cloclwork_1.waitForThreadExec)(clockworkProvider, userBettingData.thread);
+        console.log("Done");
     }
 })
     .command({

@@ -15,6 +15,7 @@ export const waitForThreadExec = async (clockworkProvider: ClockworkProvider, th
         }
         if (i == maxWait) throw Error("Timeout");
         i += 1;
+        console.log("Next await");
         await new Promise((r) => setTimeout(r, i * 1000));
     }
 }
