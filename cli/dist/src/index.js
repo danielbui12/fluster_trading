@@ -113,17 +113,22 @@ require('yargs/yargs')(process.argv.slice(2))
                 const totalPnL = p.account.resultPrice.toNumber() !== 0 ?
                     (isUserWin ? p.account.betAmount.toNumber() * 2 - tradingFeeAmount : protocolFeeAmount + p.account.betAmount.toNumber()) :
                     protocolFeeAmount;
-                console.log(await (0, web3_1.getBlockTimestamp)(connection));
-                console.log(p.account.destinationTimestamp.toString());
-                return {
+                const detail = {
                     positionAddress: p.publicKey.toString(),
                     poolAddress: (0, utils_1.shortenAddress)(p.account.poolState.toString()),
                     // threadId: shortenAddress(p.account.thread.toString()),
                     amountIn: (p.account.betAmount.toNumber() / web3_js_1.LAMPORTS_PER_SOL).toLocaleString(),
                     positionPrice: p.account.positionPrice.toString(),
-                    resultPrice: p.account.resultPrice.toString(),
-                    PnL: ((isUserWin ? 1 : -1) * (totalPnL / web3_js_1.LAMPORTS_PER_SOL)).toLocaleString()
+                    // resultPrice: p.account.resultPrice.toString(),
                 };
+                if (p.account.resultPrice.toNumber() === 0) {
+                    detail.destinationTimestamp = new Date(p.account.destinationTimestamp.toNumber() * 1000).toLocaleString();
+                }
+                else {
+                    detail.resultPrice = p.account.resultPrice.toString();
+                }
+                detail.PnL = ((isUserWin ? 1 : -1) * (totalPnL / web3_js_1.LAMPORTS_PER_SOL)).toLocaleString();
+                return detail;
             })).then(console.table);
         }
         else {
