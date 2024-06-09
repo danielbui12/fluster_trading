@@ -200,34 +200,24 @@ export async function complete(
     program: Program<FlusterTrading>,
     clockworkProvider: ClockworkProvider,
     payer: Signer,
-    tradingToken: PublicKey,
+    positionAddress: PublicKey,
     ftTokenMint: PublicKey,
     confirmOptions?: ConfirmOptions,
 ) {
-    const [poolAddress] = getPoolAddress(
-        tradingToken,
-        program.programId
-    );
-
     const [authority] = getAuthAddress(
         program.programId
     );
+    const userBettingData = await program.account.bettingState.fetch(positionAddress);
     const [userAccount] = getUserVaultAddress(
         payer.publicKey,
         ftTokenMint,
         program.programId
     );
     const [vault] = getPoolVaultAddress(
-        poolAddress,
+        userBettingData.poolState,
         ftTokenMint,
         program.programId
     );
-    const [userBettingState] = getUserBettingState(
-        payer.publicKey,
-        poolAddress,
-        program.programId,
-    )
-    const userBettingData = await program.account.bettingState.fetch(userBettingState);
 
     const ix = await program.methods
         .complete()
@@ -235,10 +225,10 @@ export async function complete(
             payer: payer.publicKey,
             owner: userBettingData.owner,
             authority: authority,
-            poolState: poolAddress,
+            poolState: userBettingData.poolState,
             userAccount: userAccount,
             tokenVault: vault,
-            userBetting: userBettingState,
+            userBetting: positionAddress,
             tokenMint: ftTokenMint,
             thread: userBettingData.thread,
             clockworkProgram: clockworkProvider.threadProgram.programId,
@@ -256,43 +246,34 @@ export async function complete(
 export async function closeBetting(
     program: Program<FlusterTrading>,
     payer: Signer,
-    tradingToken: PublicKey,
+    positionAddress: PublicKey,
     ftTokenMint: PublicKey,
     confirmOptions?: ConfirmOptions,
 ) {
-    const [poolAddress] = getPoolAddress(
-        tradingToken,
-        program.programId
-    );
-
     const [authority] = getAuthAddress(
         program.programId
     );
+    const userBettingData = await program.account.bettingState.fetch(positionAddress);
     const [userAccount] = getUserVaultAddress(
         payer.publicKey,
         ftTokenMint,
         program.programId
     );
     const [vault] = getPoolVaultAddress(
-        poolAddress,
+        userBettingData.poolState,
         ftTokenMint,
         program.programId
     );
-    const [userBettingState] = getUserBettingState(
-        payer.publicKey,
-        poolAddress,
-        program.programId,
-    )
 
     const ix = await program.methods
         .closeBetting()
         .accounts({
             payer: payer.publicKey,
             authority: authority,
-            poolState: poolAddress,
+            poolState: userBettingData.poolState,
             userAccount: userAccount,
             tokenVault: vault,
-            userBetting: userBettingState,
+            userBetting: positionAddress,
             tokenMint: ftTokenMint,
             tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: SystemProgram.programId,

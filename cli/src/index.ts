@@ -266,9 +266,8 @@ require('yargs/yargs')(process.argv.slice(2))
             console.log('max slippage', priceSlippage);
             //
             const ltsBlockTimestamp = await getBlockTimestamp(connection);
-            console.log(ltsBlockTimestamp);
             const destinationTimestamp = ltsBlockTimestamp + argv.duration;
-            console.log(destinationTimestamp);
+
             const setupBet = await betting(
                 program,
                 clockworkProvider,
@@ -302,7 +301,7 @@ require('yargs/yargs')(process.argv.slice(2))
         }
     })
     .command({
-        command: 'complete',
+        command: 'complete <position_address>',
         aliases: ['complete', 'complete'],
         desc: 'complete the order',
         builder: (yargs) => yargs,
@@ -314,13 +313,13 @@ require('yargs/yargs')(process.argv.slice(2))
                 program,
                 clockworkProvider,
                 wallet.payer,
-                NATIVE_MINT,
+                argv.position_address,
                 CURRENCY.publicKey
             );
             const setUpCloseBetting = await closeBetting(
                 program,
                 wallet.payer,
-                NATIVE_MINT,
+                argv.position_address,
                 CURRENCY.publicKey
             );
 

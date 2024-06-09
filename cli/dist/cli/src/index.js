@@ -239,9 +239,7 @@ require('yargs/yargs')(process.argv.slice(2))
         console.log('max slippage', priceSlippage);
         //
         const ltsBlockTimestamp = await (0, web3_1.getBlockTimestamp)(connection);
-        console.log(ltsBlockTimestamp);
         const destinationTimestamp = ltsBlockTimestamp + argv.duration;
-        console.log(destinationTimestamp);
         const setupBet = await (0, instructions_1.betting)(program, clockworkProvider, wallet.payer, spl_token_1.NATIVE_MINT, const_1.CURRENCY.publicKey, {
             threadId: Math.floor(Math.random() * 1000000000).toString(),
             amountIn: new bn_js_1.BN(argv.amount_in * web3_js_1.LAMPORTS_PER_SOL),
@@ -267,15 +265,15 @@ require('yargs/yargs')(process.argv.slice(2))
     }
 })
     .command({
-    command: 'complete',
+    command: 'complete <position_address>',
     aliases: ['complete', 'complete'],
     desc: 'complete the order',
     builder: (yargs) => yargs,
     handler: async (argv) => {
         const { program, provider, wallet } = preLoad();
         const clockworkProvider = sdk_1.ClockworkProvider.fromAnchorProvider(provider);
-        const setupComplete = await (0, instructions_1.complete)(program, clockworkProvider, wallet.payer, spl_token_1.NATIVE_MINT, const_1.CURRENCY.publicKey);
-        const setUpCloseBetting = await (0, instructions_1.closeBetting)(program, wallet.payer, spl_token_1.NATIVE_MINT, const_1.CURRENCY.publicKey);
+        const setupComplete = await (0, instructions_1.complete)(program, clockworkProvider, wallet.payer, argv.position_address, const_1.CURRENCY.publicKey);
+        const setUpCloseBetting = await (0, instructions_1.closeBetting)(program, wallet.payer, argv.position_address, const_1.CURRENCY.publicKey);
         const txHash = await (0, tx_1.sendAndConfirmIx)(program.provider.connection, [setupComplete.ix, setUpCloseBetting.ix], [wallet.payer]);
         (0, utils_1.explorer)({ tx: txHash });
     }

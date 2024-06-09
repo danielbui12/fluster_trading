@@ -96,23 +96,21 @@ async function betting(program, clockworkProvider, payer, tradingToken, ftTokenM
     return { ix, userBettingState };
 }
 exports.betting = betting;
-async function complete(program, clockworkProvider, payer, tradingToken, ftTokenMint, confirmOptions) {
-    const [poolAddress] = (0, pda_1.getPoolAddress)(tradingToken, program.programId);
+async function complete(program, clockworkProvider, payer, positionAddress, ftTokenMint, confirmOptions) {
     const [authority] = (0, pda_1.getAuthAddress)(program.programId);
+    const userBettingData = await program.account.bettingState.fetch(positionAddress);
     const [userAccount] = (0, pda_1.getUserVaultAddress)(payer.publicKey, ftTokenMint, program.programId);
-    const [vault] = (0, pda_1.getPoolVaultAddress)(poolAddress, ftTokenMint, program.programId);
-    const [userBettingState] = (0, pda_1.getUserBettingState)(payer.publicKey, poolAddress, program.programId);
-    const userBettingData = await program.account.bettingState.fetch(userBettingState);
+    const [vault] = (0, pda_1.getPoolVaultAddress)(userBettingData.poolState, ftTokenMint, program.programId);
     const ix = await program.methods
         .complete()
         .accounts({
         payer: payer.publicKey,
         owner: userBettingData.owner,
         authority: authority,
-        poolState: poolAddress,
+        poolState: userBettingData.poolState,
         userAccount: userAccount,
         tokenVault: vault,
-        userBetting: userBettingState,
+        userBetting: positionAddress,
         tokenMint: ftTokenMint,
         thread: userBettingData.thread,
         clockworkProgram: clockworkProvider.threadProgram.programId,
@@ -125,21 +123,20 @@ async function complete(program, clockworkProvider, payer, tradingToken, ftToken
     return { ix };
 }
 exports.complete = complete;
-async function closeBetting(program, payer, tradingToken, ftTokenMint, confirmOptions) {
-    const [poolAddress] = (0, pda_1.getPoolAddress)(tradingToken, program.programId);
+async function closeBetting(program, payer, positionAddress, ftTokenMint, confirmOptions) {
     const [authority] = (0, pda_1.getAuthAddress)(program.programId);
+    const userBettingData = await program.account.bettingState.fetch(positionAddress);
     const [userAccount] = (0, pda_1.getUserVaultAddress)(payer.publicKey, ftTokenMint, program.programId);
-    const [vault] = (0, pda_1.getPoolVaultAddress)(poolAddress, ftTokenMint, program.programId);
-    const [userBettingState] = (0, pda_1.getUserBettingState)(payer.publicKey, poolAddress, program.programId);
+    const [vault] = (0, pda_1.getPoolVaultAddress)(userBettingData.poolState, ftTokenMint, program.programId);
     const ix = await program.methods
         .closeBetting()
         .accounts({
         payer: payer.publicKey,
         authority: authority,
-        poolState: poolAddress,
+        poolState: userBettingData.poolState,
         userAccount: userAccount,
         tokenVault: vault,
-        userBetting: userBettingState,
+        userBetting: positionAddress,
         tokenMint: ftTokenMint,
         tokenProgram: spl_token_1.TOKEN_PROGRAM_ID,
         systemProgram: web3_js_1.SystemProgram.programId,
