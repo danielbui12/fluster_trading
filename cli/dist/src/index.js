@@ -135,7 +135,7 @@ require('yargs/yargs')(process.argv.slice(2))
             const pool = await program.account.poolState.all();
             console.table(pool.map((p) => {
                 return {
-                    poolAddress: (0, utils_1.shortenAddress)(p.publicKey.toString()),
+                    poolAddress: p.publicKey.toString(),
                     mint: (0, utils_1.shortenAddress)(p.account.mint.toString()),
                     tokenOracle: (0, utils_1.shortenAddress)(p.account.tokenOracle.toString()),
                     status: p.account.status === 0 ? 'open' : 'close',
@@ -149,7 +149,7 @@ require('yargs/yargs')(process.argv.slice(2))
     .command({
     command: 'deposit <amount>',
     aliases: ['deposit', 'deposit'],
-    desc: 'deposit to account',
+    desc: 'deposit to account by SOL',
     builder: (yargs) => yargs
         .number('amount')
         .check(argv => {
@@ -204,10 +204,18 @@ require('yargs/yargs')(process.argv.slice(2))
     }
 })
     .command({
-    command: 'bet <amount_in>',
+    command: 'bet',
     aliases: ['bet', 'bet'],
     desc: 'bet',
     builder: (yargs) => yargs
+        .option('pool', {
+        alias: 'p',
+        describe: 'pool address',
+    })
+        .option('amount_in', {
+        alias: 'a',
+        describe: 'amount in',
+    })
         .option('duration', {
         alias: 'du',
         describe: 'duration time in second',
@@ -218,6 +226,9 @@ require('yargs/yargs')(process.argv.slice(2))
         choices: ['Up', 'Down']
     })
         .check(argv => {
+        if (new web3_js_1.PublicKey(argv.pool.toString()).toBase58() !== argv.pool) {
+            throw new Error('<pool> must be base58 encoded');
+        }
         if (isNaN(argv.amount_in)) {
             throw new Error('<amount_in> must be a number');
         }
@@ -245,7 +256,7 @@ require('yargs/yargs')(process.argv.slice(2))
         //
         const ltsBlockTimestamp = await (0, web3_1.getBlockTimestamp)(connection);
         const destinationTimestamp = ltsBlockTimestamp + argv.duration;
-        const setupBet = await (0, instructions_1.betting)(program, clockworkProvider, wallet.payer, spl_token_1.NATIVE_MINT, const_1.CURRENCY.publicKey, {
+        const setupBet = await (0, instructions_1.betting)(program, clockworkProvider, wallet.payer, new web3_js_1.PublicKey(argv.pool), const_1.CURRENCY.publicKey, {
             threadId: Math.floor(Math.random() * 1000000000).toString(),
             amountIn: new bn_js_1.BN(argv.amount_in * web3_js_1.LAMPORTS_PER_SOL),
             priceSlippage: new bn_js_1.BN(priceSlippage.toString()),

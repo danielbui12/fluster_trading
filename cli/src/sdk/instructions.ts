@@ -134,7 +134,7 @@ export async function betting(
     program: Program<FlusterTrading>,
     clockworkProvider: ClockworkProvider,
     payer: Signer,
-    tradingToken: PublicKey,
+    poolAddress: PublicKey,
     ftTokenMint: PublicKey,
     config: {
         threadId: string,
@@ -145,10 +145,6 @@ export async function betting(
     },
     confirmOptions?: ConfirmOptions,
 ) {
-    const [poolAddress] = getPoolAddress(
-        tradingToken,
-        program.programId
-    );
     const poolState = await program.account.poolState.fetch(poolAddress);
     const [authority] = getAuthAddress(
         program.programId

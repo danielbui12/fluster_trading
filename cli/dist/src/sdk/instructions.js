@@ -66,8 +66,7 @@ async function deposit(program, payer, operator, tokenOracle, ftTokenMint, userT
     return { ix, userAccount, userVault, operatorAccount, operatorVault };
 }
 exports.deposit = deposit;
-async function betting(program, clockworkProvider, payer, tradingToken, ftTokenMint, config, confirmOptions) {
-    const [poolAddress] = (0, pda_1.getPoolAddress)(tradingToken, program.programId);
+async function betting(program, clockworkProvider, payer, poolAddress, ftTokenMint, config, confirmOptions) {
     const poolState = await program.account.poolState.fetch(poolAddress);
     const [authority] = (0, pda_1.getAuthAddress)(program.programId);
     const [userAccount] = (0, pda_1.getUserVaultAddress)(payer.publicKey, ftTokenMint, program.programId);

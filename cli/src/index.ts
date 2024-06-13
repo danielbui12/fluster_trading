@@ -5,7 +5,7 @@ import { CURRENCY, FLUSTER_PROGRAM_ID, MAX_PERCENTAGE, MIN_PERCENTAGE, OPERATOR,
 import config from '../config.json';
 import fs from 'fs';
 import { IDL } from './idl/fluster_trading';
-import { Commitment, Connection, Keypair, LAMPORTS_PER_SOL, SystemProgram, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
+import { Commitment, Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
 import { explorer, shortenAddress } from "./sdk/utils";
 import { getUserVaultAddress } from "./sdk/pda";
 import { NATIVE_MINT, TOKEN_PROGRAM_ID, createSyncNativeInstruction, createWrappedNativeAccount, getAccount, getAssociatedTokenAddressSync } from "@solana/spl-token";
@@ -145,7 +145,7 @@ require('yargs/yargs')(process.argv.slice(2))
                 const pool = await program.account.poolState.all()
                 console.table(pool.map((p) => {
                     return {
-                        poolAddress: shortenAddress(p.publicKey.toString()),
+                        poolAddress: p.publicKey.toString(),
                         mint: shortenAddress(p.account.mint.toString()),
                         tokenOracle: shortenAddress(p.account.tokenOracle.toString()),
                         status: p.account.status === 0 ? 'open' : 'close',
@@ -159,7 +159,7 @@ require('yargs/yargs')(process.argv.slice(2))
     .command({
         command: 'deposit <amount>',
         aliases: ['deposit', 'deposit'],
-        desc: 'deposit to account',
+        desc: 'deposit to account by SOL',
         builder: (yargs) => yargs
             .number('amount')
             .check(argv => {
@@ -230,10 +230,18 @@ require('yargs/yargs')(process.argv.slice(2))
         }
     })
     .command({
-        command: 'bet <amount_in>',
+        command: 'bet',
         aliases: ['bet', 'bet'],
         desc: 'bet',
         builder: (yargs) => yargs
+            .option('pool', {
+                alias: 'p',
+                describe: 'pool address',
+            })
+            .option('amount_in', {
+                alias: 'a',
+                describe: 'amount in',
+            })
             .option('duration', {
                 alias: 'du',
                 describe: 'duration time in second',
@@ -244,6 +252,9 @@ require('yargs/yargs')(process.argv.slice(2))
                 choices: ['Up', 'Down']
             })
             .check(argv => {
+                if (new PublicKey(argv.pool.toString()).toBase58() !== argv.pool) {
+                    throw new Error('<pool> must be base58 encoded');
+                }
                 if (isNaN(argv.amount_in)) {
                     throw new Error('<amount_in> must be a number');
                 }
@@ -276,7 +287,7 @@ require('yargs/yargs')(process.argv.slice(2))
                 program,
                 clockworkProvider,
                 wallet.payer,
-                NATIVE_MINT,
+                new PublicKey(argv.pool),
                 CURRENCY.publicKey,
                 {
                     threadId: Math.floor(Math.random() * 1_000_000_000).toString(),
