@@ -16,7 +16,7 @@ cd fluster_trading
 yarn install
 # cargo install -f --locked --git https://github.com/danielbui12/clockwork clockwork-cli
 yarn setup:env
-yarn setup:node
+yarn setup:node --provider.cluster "<localnet | devnet>"
 yarn test
 ```
 
@@ -36,8 +36,14 @@ solana program dump -u m CLoCKyJ6DXBJqqu2VWx9RLbgnwwR6BMHHuyasVmfMzBh forked-pro
 
 In spot/swap trading, traders buy and sell assets at the current market price, aiming to profit from price movements over varying durations. This method often requires significant capital to maximize profits, as larger positions typically yield greater returns. While it offers flexibility, the complexity and time involved in holding and managing positions can be challenging.
 
+![spot-trading-disadvantage](https://github.com/danielbui12/fluster_trading/assets/79790753/4f70c950-7c73-4d9a-ae82-250afa054486)
+
+
 #### Futures Trading vs. Fluster Trading
 Futures trading, on the other hand, involves committing to buy or sell an asset at a predetermined price on a future date. This high-risk approach leverages potential gains but also amplifies potential losses. Successful futures trading demands a deep understanding of technical indicators, market trends, and risk management strategies. Traders must be adept at analyzing charts, monitoring market news, and using advanced technical analysis tools to make informed decisions.
+
+![future-trading-disadvantage](https://github.com/danielbui12/fluster_trading/assets/79790753/768da462-c358-406a-a7c1-73201a0acdaa)
+
 
 #### Why Choose Fluster Trading?
 Fluster Trading simplifies the trading process by focusing on binary-options trading. This method allows users to predict whether an asset's price will rise or fall within a specific time frame. It's designed to be user-friendly, with a lower barrier to entry and quicker profit potential compared to traditional trading methods.
@@ -47,8 +53,6 @@ Key features of Fluster Trading include:
 - Ease of Use: Our platform is intuitive, making it accessible even to beginners.
 - Quick Profits: Binary-options trading offers the potential for rapid returns.
 - Set Slippage: Fluster allows users to set the slippage, giving them more control over their trades.
-
-
 
 ### Asset
 
@@ -72,12 +76,6 @@ Key features of Fluster Trading include:
         - Token price: current market price (based on Pyth price feed).
         - Duration: the “5 min”
         - Trading direction: Up
-        
-        ```
-        💡 **Fluster allows users to set the slippage.**
-        When execute the instruction, the price of token may change caused by the Pyth price feed. If the market price is **less** than the slippage price and trading direction is **Down**, or, the market price is **greater** than the slippage price and the trading direction is **Up**, subsequently the order is automatically **cancelled**.
-        ```
-        
         - The **“bet”** instruction will create a new Thread by making a CPI to Clockwork network for order fulfillment.
     - Await orders
         - After users placed orders successfully, everything next is just waiting for order fulfillment by Clockwork.
