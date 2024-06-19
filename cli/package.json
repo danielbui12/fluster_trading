@@ -1,16 +1,17 @@
 {
-  "name": "cli",
-  "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT",
-  "scripts": {
-    "dev": "yarn ts-node -r tsconfig-paths/register src/index.ts",
-    "fluster": "node dist/cli/src/index.js"
-  },
-  "dependencies": {
-    "@types/node": "^20.14.2",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.4.5",
-    "yargs": "^17.7.2"
-  }
+    "name": "cli",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT",
+    "scripts": {
+        "dev": "yarn ts-node -r tsconfig-paths/register src/index.ts",
+        "fluster": "node dist/cli/src/index.js"
+    },
+    "dependencies": {
+        "@types/node": "^20.14.2",
+        "os": "^0.1.2",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.4.5",
+        "yargs": "^17.7.2"
+    }
 }

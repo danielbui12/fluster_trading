@@ -24,14 +24,21 @@ const web3_1 = require("./sdk/web3");
 const cloclwork_1 = require("./sdk/cloclwork");
 const homeDir = os_1.default.homedir();
 const configPath = homeDir + "/.config/fluster/config.json";
+const defaultWalletPath = homeDir + "/.config/solana/id.json";
 var config = (() => {
     let cfg = {};
     if (fs_1.default.existsSync(configPath)) {
         cfg = JSON.parse(fs_1.default.readFileSync(configPath, { encoding: 'utf-8' }) || "{}");
     }
     else {
+        cfg = {
+            "WALLET_URI": defaultWalletPath,
+            "RPC": "https://api.devnet.solana.com",
+            "COMMITMENT": "finalized",
+            "SLIPPAGE": 100
+        };
         fs_1.default.mkdirSync(homeDir + "/.config/fluster", { recursive: true });
-        fs_1.default.writeFileSync(configPath, JSON.stringify(config, null, 4));
+        fs_1.default.writeFileSync(configPath, JSON.stringify(cfg, null, 4), { encoding: 'utf-8' });
     }
     return cfg;
 })();
@@ -75,7 +82,7 @@ require('yargs/yargs')(process.argv.slice(2))
             builder: (yargs) => yargs
                 .option('wallet', {
                 alias: 'wallet',
-                default: homeDir + "/.config/solana/id.json",
+                default: defaultWalletPath,
                 describe: 'the wallet keypair file uri'
             }).option('rpc', {
                 alias: 'rpc',

@@ -2,7 +2,7 @@
 
 import { AnchorProvider, Program, Wallet } from "@coral-xyz/anchor";
 import { CURRENCY, FLUSTER_PROGRAM_ID, MAX_PERCENTAGE, MIN_PERCENTAGE, OPERATOR, PERCENTAGE_PADDING, PERCENT_DENOMINATION } from "./const";
-import config from '../config.json';
+import os from 'os';
 import fs from 'fs';
 import { IDL } from './idl/fluster_trading';
 import { Commitment, Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
@@ -18,6 +18,26 @@ import { parsePriceData } from "@pythnetwork/client";
 import { protocolFee } from "./sdk/fee";
 import { getBlockTimestamp } from "./sdk/web3";
 import { waitForFlusterThreadExec } from "./sdk/cloclwork";
+
+const homeDir = os.homedir();
+const configPath = homeDir + "/.config/fluster/config.json";
+const defaultWalletPath = homeDir + "/.config/solana/id.json";
+var config = (() => {
+    let cfg = {};
+    if (fs.existsSync(configPath)) {
+        cfg = JSON.parse(fs.readFileSync(configPath, { encoding: 'utf-8' }) || "{}")
+    } else {
+        cfg = {
+            "WALLET_URI": defaultWalletPath,
+            "RPC": "https://api.devnet.solana.com",
+            "COMMITMENT": "finalized",
+            "SLIPPAGE": 100
+        }
+        fs.mkdirSync(homeDir + "/.config/fluster", { recursive: true })
+        fs.writeFileSync(configPath, JSON.stringify(cfg, null, 4), { encoding: 'utf-8' });
+    }
+    return cfg;
+})() as any;
 
 const preLoad = () => {
     const key = JSON.parse(fs.readFileSync(config.WALLET_URI, { encoding: 'utf-8' }));
@@ -36,6 +56,7 @@ const preLoad = () => {
 }
 
 require('yargs/yargs')(process.argv.slice(2))
+    .scriptName("fluster")
     .usage("Usage: npm run fluster <command> [options]  For help: npm run fluster -h")
     .version("0.1.0")
     .help("help")
@@ -62,7 +83,7 @@ require('yargs/yargs')(process.argv.slice(2))
                 builder: (yargs) => yargs
                     .option('wallet', {
                         alias: 'wallet',
-                        default: "/Users/tung/.config/solana/id.json",
+                        default: defaultWalletPath,
                         describe: 'the wallet keypair file uri'
                     }).option('rpc', {
                         alias: 'rpc',
@@ -92,7 +113,7 @@ require('yargs/yargs')(process.argv.slice(2))
                     config.RPC = argv.rpc;
                     config.COMMITMENT = argv.commitment;
                     config.SLIPPAGE = argv.slippage * PERCENTAGE_PADDING;
-                    fs.writeFileSync('./config.json', JSON.stringify(config, null, 4));
+                    fs.writeFileSync(configPath, JSON.stringify(config, null, 4));
                 }
             })
         }
