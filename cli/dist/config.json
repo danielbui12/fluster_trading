@@ -1,6 +1,0 @@
-{
-    "WALLET_URI": "/Users/tung/.config/solana/id.json",
-    "RPC": "https://api.devnet.solana.com",
-    "COMMITMENT": "finalized",
-    "SLIPPAGE": 100
-}

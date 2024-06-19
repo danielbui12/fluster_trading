@@ -16,7 +16,7 @@ fluster complete HLc42J3gCfCpsu66wFwoSZLdwCfq1ZHxGPy2JahXXECv
 - add this `alias` to profile
 ```sh
 ...
-alias fluster="node /Users/tung/Documents/fluster_trading/cli/dist/src/index.js
+alias fluster="node /Users/tung/Documents/fluster_trading/cli/dist/index.js"
 ...
 
 source ~/.bash_profile or your profile to save script

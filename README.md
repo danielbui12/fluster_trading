@@ -101,8 +101,8 @@ Key features of Fluster Trading include:
 1. Protocol fee
     - 0.01%
     - Occurring when users place an order
-    - i.e. I bet 10 ftUSD → I have to pay 10.1 ftUSD
+    - i.e. I bet 10 ftUSD → I have to pay 10.001 ftUSD
 2. Trading fee (aka. Taker fee)
     - 20% ⇒ rest 80%
     - Occurring if orders won
-    - i.e. User bet 10 ftUSD → the order won → profit: 10 (amount in) + 10 * 0.8 = 18 ftUSDT →  total profit: 18 - 0.1 = 17.9 ftUSD
+    - i.e. User bet 10 ftUSD → the order won → profit: 10 (amount in) + 10 * 0.8 = 18 ftUSDT →  total profit: 18 - 0.1 = 17.999 ftUSD
