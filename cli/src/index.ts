@@ -43,41 +43,58 @@ require('yargs/yargs')(process.argv.slice(2))
     .command({
         command: 'configure',
         aliases: ['config', 'cfg'],
-        desc: 'Set a config variable',
-        builder: (yargs) => yargs
-            .option('wallet', {
-                alias: 'wallet',
-                default: "~/.config/solana/id.json",
-                describe: 'the wallet keypair file uri'
-            }).option('rpc', {
-                alias: 'rpc',
-                default: "https://api.devnet.solana.com",
-                describe: 'rpc cluster url'
-            }).option('commitment', {
-                alias: 'commitment',
-                default: "finalized",
-                describe: 'commitment level'
-            }).option('slippage', {
-                alias: 'slippage',
-                default: 1,
-                describe: 'slippage tolerance',
-                type: 'number'
+        desc: 'config variable',
+        builder: (yargs) => {
+            yargs.command({
+                command: 'get',
+                describe: 'Get the configuration settings',
+                handler: () => {
+                    console.info('Wallet URI: ', config.WALLET_URI);
+                    console.info('RPC: ', config.RPC);
+                    console.info('Commitment: ', config.COMMITMENT);
+                    console.info('Slippage: ', (config.SLIPPAGE / PERCENTAGE_PADDING).toFixed(2) + '%');
+                }
+            });
+
+            yargs.command({
+                command: 'set',
+                describe: 'Set the configuration settings',
+                builder: (yargs) => yargs
+                    .option('wallet', {
+                        alias: 'wallet',
+                        default: "/Users/tung/.config/solana/id.json",
+                        describe: 'the wallet keypair file uri'
+                    }).option('rpc', {
+                        alias: 'rpc',
+                        default: "https://api.devnet.solana.com",
+                        describe: 'rpc cluster url'
+                    }).option('commitment', {
+                        alias: 'commitment',
+                        default: "finalized",
+                        describe: 'commitment level'
+                    }).option('slippage', {
+                        alias: 'slippage',
+                        default: 1,
+                        describe: 'slippage tolerance',
+                        type: 'number'
+                    })
+                    .check(argv => {
+                        if (isNaN(argv.slippage)) {
+                            throw new Error('Slippage must be a number');
+                        }
+                        if (argv.slippage > MAX_PERCENTAGE || argv.slippage < MIN_PERCENTAGE) {
+                            throw new Error('Slippage must be between ' + MIN_PERCENTAGE + ' and ' + MAX_PERCENTAGE);
+                        }
+                        return true;
+                    }),
+                handler: (argv) => {
+                    config.WALLET_URI = argv.wallet;
+                    config.RPC = argv.rpc;
+                    config.COMMITMENT = argv.commitment;
+                    config.SLIPPAGE = argv.slippage * PERCENTAGE_PADDING;
+                    fs.writeFileSync('./config.json', JSON.stringify(config, null, 4));
+                }
             })
-            .check(argv => {
-                if (isNaN(argv.slippage)) {
-                    throw new Error('Slippage must be a number');
-                }
-                if (argv.slippage > MAX_PERCENTAGE || argv.slippage < MIN_PERCENTAGE) {
-                    throw new Error('Slippage must be between ' + MIN_PERCENTAGE + ' and ' + MAX_PERCENTAGE);
-                }
-                return true;
-            }),
-        handler: (argv) => {
-            config.WALLET_URI = argv.wallet;
-            config.RPC = argv.rpc;
-            config.COMMITMENT = argv.commitment;
-            config.SLIPPAGE = argv.slippage * PERCENTAGE_PADDING;
-            fs.writeFileSync('./config.json', JSON.stringify(config, null, 4));
         }
     })
     .command({

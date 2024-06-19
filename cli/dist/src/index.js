@@ -43,41 +43,57 @@ require('yargs/yargs')(process.argv.slice(2))
     .command({
     command: 'configure',
     aliases: ['config', 'cfg'],
-    desc: 'Set a config variable',
-    builder: (yargs) => yargs
-        .option('wallet', {
-        alias: 'wallet',
-        default: "~/.config/solana/id.json",
-        describe: 'the wallet keypair file uri'
-    }).option('rpc', {
-        alias: 'rpc',
-        default: "https://api.devnet.solana.com",
-        describe: 'rpc cluster url'
-    }).option('commitment', {
-        alias: 'commitment',
-        default: "finalized",
-        describe: 'commitment level'
-    }).option('slippage', {
-        alias: 'slippage',
-        default: 1,
-        describe: 'slippage tolerance',
-        type: 'number'
-    })
-        .check(argv => {
-        if (isNaN(argv.slippage)) {
-            throw new Error('Slippage must be a number');
-        }
-        if (argv.slippage > const_1.MAX_PERCENTAGE || argv.slippage < const_1.MIN_PERCENTAGE) {
-            throw new Error('Slippage must be between ' + const_1.MIN_PERCENTAGE + ' and ' + const_1.MAX_PERCENTAGE);
-        }
-        return true;
-    }),
-    handler: (argv) => {
-        config_json_1.default.WALLET_URI = argv.wallet;
-        config_json_1.default.RPC = argv.rpc;
-        config_json_1.default.COMMITMENT = argv.commitment;
-        config_json_1.default.SLIPPAGE = argv.slippage * const_1.PERCENTAGE_PADDING;
-        fs_1.default.writeFileSync('./config.json', JSON.stringify(config_json_1.default, null, 4));
+    desc: 'config variable',
+    builder: (yargs) => {
+        yargs.command({
+            command: 'get',
+            describe: 'Get the configuration settings',
+            handler: () => {
+                console.info('Wallet URI: ', config_json_1.default.WALLET_URI);
+                console.info('RPC: ', config_json_1.default.RPC);
+                console.info('Commitment: ', config_json_1.default.COMMITMENT);
+                console.info('Slippage: ', (config_json_1.default.SLIPPAGE / const_1.PERCENTAGE_PADDING).toFixed(2) + '%');
+            }
+        });
+        yargs.command({
+            command: 'set',
+            describe: 'Set the configuration settings',
+            builder: (yargs) => yargs
+                .option('wallet', {
+                alias: 'wallet',
+                default: "/Users/tung/.config/solana/id.json",
+                describe: 'the wallet keypair file uri'
+            }).option('rpc', {
+                alias: 'rpc',
+                default: "https://api.devnet.solana.com",
+                describe: 'rpc cluster url'
+            }).option('commitment', {
+                alias: 'commitment',
+                default: "finalized",
+                describe: 'commitment level'
+            }).option('slippage', {
+                alias: 'slippage',
+                default: 1,
+                describe: 'slippage tolerance',
+                type: 'number'
+            })
+                .check(argv => {
+                if (isNaN(argv.slippage)) {
+                    throw new Error('Slippage must be a number');
+                }
+                if (argv.slippage > const_1.MAX_PERCENTAGE || argv.slippage < const_1.MIN_PERCENTAGE) {
+                    throw new Error('Slippage must be between ' + const_1.MIN_PERCENTAGE + ' and ' + const_1.MAX_PERCENTAGE);
+                }
+                return true;
+            }),
+            handler: (argv) => {
+                config_json_1.default.WALLET_URI = argv.wallet;
+                config_json_1.default.RPC = argv.rpc;
+                config_json_1.default.COMMITMENT = argv.commitment;
+                config_json_1.default.SLIPPAGE = argv.slippage * const_1.PERCENTAGE_PADDING;
+                fs_1.default.writeFileSync('./config.json', JSON.stringify(config_json_1.default, null, 4));
+            }
+        });
     }
 })
     .command({
