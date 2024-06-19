@@ -20,7 +20,7 @@ yarn setup:node --provider.cluster "<localnet | devnet>"
 yarn test
 ```
 
-## Fork program on mainnet
+## Fork program from mainnet
 
 ```sh
 solana program dump -u m metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s forked-programs/metadata.so
@@ -105,4 +105,4 @@ Key features of Fluster Trading include:
 2. Trading fee (aka. Taker fee)
     - 20% ⇒ rest 80%
     - Occurring if orders won
-    - i.e. User bet 10 ftUSD → the order won → profit: 10 (amount in) + 10 * 0.8 = 18 ftUSDT →  total profit: 18 - 0.1 = 17.999 ftUSD
+    - i.e. User bet 10 ftUSD → the order won → profit: 10 (amount in) + 10 * 0.8 = 18 ftUSDT →  total profit: 18 - 0.001 = 17.999 ftUSD
