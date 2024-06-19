@@ -148,7 +148,7 @@ require('yargs/yargs')(process.argv.slice(2))
                 const tradingFeeAmount = (0, fee_1.protocolFee)(p.account.betAmount.toNumber(), poolState[p.account.poolState.toString()].tradingFeeRate);
                 const isUserWin = ('up' in p.account.tradeDirection && p.account.resultPrice > p.account.positionPrice) || ('down' in p.account.tradeDirection && p.account.resultPrice < p.account.positionPrice);
                 const totalPnL = p.account.resultPrice.toNumber() !== 0 ?
-                    (isUserWin ? p.account.betAmount.toNumber() * 2 - tradingFeeAmount : protocolFeeAmount + p.account.betAmount.toNumber()) :
+                    (isUserWin ? p.account.betAmount.toNumber() * 2 - tradingFeeAmount - protocolFeeAmount : protocolFeeAmount + p.account.betAmount.toNumber()) :
                     protocolFeeAmount;
                 const detail = {
                     positionAddress: p.publicKey.toString(),
