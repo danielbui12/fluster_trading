@@ -303,6 +303,11 @@ exports.IDL = {
                     "isSigner": false
                 },
                 {
+                    "name": "tokenOracleProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
                     "name": "payer",
                     "isMut": true,
                     "isSigner": true,
@@ -422,6 +427,11 @@ exports.IDL = {
                 },
                 {
                     "name": "tokenOracle",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "tokenOracleProgram",
                     "isMut": false,
                     "isSigner": false
                 },
@@ -585,6 +595,11 @@ exports.IDL = {
                     "isSigner": false
                 },
                 {
+                    "name": "tokenOracleProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
                     "name": "tokenMint",
                     "isMut": false,
                     "isSigner": false,
@@ -680,6 +695,11 @@ exports.IDL = {
                 },
                 {
                     "name": "tokenOracle",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "tokenOracleProgram",
                     "isMut": false,
                     "isSigner": false
                 },

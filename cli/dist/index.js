@@ -18,7 +18,6 @@ const oracle_1 = require("./sdk/oracle");
 const tx_1 = require("./sdk/tx");
 const bn_js_1 = require("bn.js");
 const sdk_1 = require("@clockwork-xyz/sdk");
-const client_1 = require("@pythnetwork/client");
 const fee_1 = require("./sdk/fee");
 const web3_1 = require("./sdk/web3");
 const cloclwork_1 = require("./sdk/cloclwork");
@@ -284,13 +283,12 @@ require('yargs/yargs')(process.argv.slice(2))
         const { program, wallet, provider, connection } = preLoad();
         const clockworkProvider = sdk_1.ClockworkProvider.fromAnchorProvider(provider);
         // get current price data -> calculate price slippage
-        const accountData = await connection.getAccountInfo(oracle_1.SOL_PRICE_FEED_ID);
-        const priceData = (0, client_1.parsePriceData)(accountData.data);
-        const priceComponent = priceData.priceComponents[0].aggregate.priceComponent;
-        console.log('current SOL/USD price', priceComponent);
-        const priceSlippage = priceComponent * BigInt(const_1.PERCENT_DENOMINATION + config.SLIPPAGE) / BigInt(const_1.PERCENTAGE_PADDING);
-        console.log('max slippage', priceSlippage);
-        //
+        // const accountData = await connection.getAccountInfo(SOL_PRICE_FEED_ID);
+        // const priceData = parsePriceData(accountData.data);
+        // const priceComponent = priceData.priceComponents[0].aggregate.priceComponent;
+        // const priceComponent = await getTokenPriceFromChainLink();
+        // console.log('current SOL/USD price', priceComponent);
+        const priceSlippage = argv.direction === instructions_1.TradeDirection.Down ? 0 : '100000000000000000';
         const ltsBlockTimestamp = await (0, web3_1.getBlockTimestamp)(connection);
         const destinationTimestamp = ltsBlockTimestamp + argv.duration;
         const setupBet = await (0, instructions_1.betting)(program, clockworkProvider, wallet.payer, new web3_js_1.PublicKey(argv.pool), const_1.CURRENCY.publicKey, {

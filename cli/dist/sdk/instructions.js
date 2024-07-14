@@ -4,6 +4,7 @@ exports.closeBetting = exports.complete = exports.reveal = exports.betting = exp
 const web3_js_1 = require("@solana/web3.js");
 const spl_token_1 = require("@solana/spl-token");
 const pda_1 = require("./pda");
+const oracle_1 = require("./oracle");
 exports.TradeDirection = {
     Up: 0,
     Down: 1,
@@ -56,6 +57,7 @@ async function deposit(program, payer, operator, tokenOracle, ftTokenMint, userT
         destinationTokenMint: ftTokenMint,
         destinationTokenProgram: spl_token_1.TOKEN_PROGRAM_ID,
         tokenOracle: tokenOracle,
+        tokenOracleProgram: oracle_1.CHAINLINK_PROGRAM_ID,
         // associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         systemProgram: web3_js_1.SystemProgram.programId,
         rent: web3_js_1.SYSVAR_RENT_PUBKEY,
@@ -88,6 +90,7 @@ async function betting(program, clockworkProvider, payer, poolAddress, ftTokenMi
         tokenVault: vault,
         userBetting: userBettingState,
         tokenOracle: poolState.tokenOracle,
+        tokenOracleProgram: oracle_1.CHAINLINK_PROGRAM_ID,
         tokenMint: ftTokenMint,
         // thread: thread,
         // clockworkProgram: clockworkProvider.threadProgram.programId,
@@ -113,6 +116,7 @@ async function reveal(program, payer, positionAddress, ftTokenMint, confirmOptio
         poolState: userBettingData.poolState,
         userBetting: positionAddress,
         tokenOracle: poolStateData.tokenOracle,
+        tokenOracleProgram: oracle_1.CHAINLINK_PROGRAM_ID,
         tokenMint: ftTokenMint,
         tokenProgram: spl_token_1.TOKEN_PROGRAM_ID,
         systemProgram: web3_js_1.SystemProgram.programId,

@@ -15,7 +15,8 @@ git clone https://github.com/danielbui12/fluster_trading
 cd fluster_trading
 yarn install
 # cargo install -f --locked --git https://github.com/danielbui12/clockwork clockwork-cli
-yarn setup:env
+yarn setup:env --provider.cluster "<localnet | devnet>"
+anchor deploy
 yarn setup:node --provider.cluster "<localnet | devnet>"
 yarn test
 ```
