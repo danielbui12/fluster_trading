@@ -1,7 +1,7 @@
 use crate::utils::to_decimals;
-use crate::utils::{create_token_account, get_token_price, token::transfer_token};
+use crate::utils::{create_token_account, get_token_price_from_chainlink, token::transfer_token};
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program;
+// use anchor_lang::solana_program;
 use anchor_spl::{
     token::Token,
     token_interface::{Mint, TokenAccount},
@@ -70,8 +70,11 @@ pub struct Deposit<'info> {
     /// Program to create mint account and mint tokens
     pub destination_token_program: Program<'info, Token>,
 
-    /// CHECK: Pyth price feed account of user token mint
+    /// CHECK: Chainlink price feed account of user token mint
     pub token_oracle: UncheckedAccount<'info>,
+
+    /// CHECK: This is the Chainlink program library on Devnet
+    pub token_oracle_program: UncheckedAccount<'info>,
 
     /// payer
     #[account(mut)]
@@ -89,7 +92,7 @@ pub struct Deposit<'info> {
 }
 
 pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
-    let block_timestamp = solana_program::clock::Clock::get()?.unix_timestamp;
+    // let block_timestamp = solana_program::clock::Clock::get()?.unix_timestamp;
     if ctx.accounts.user_account.get_lamports() == 0 {
         create_token_account(
             &ctx.accounts.authority.to_account_info(),
@@ -121,7 +124,10 @@ pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
     )?;
 
     // transfer FT mint from vault to user account
-    let (price, expo) = get_token_price(block_timestamp, ctx.accounts.token_oracle.as_ref());
+    let (price, expo) = get_token_price_from_chainlink(
+      ctx.accounts.token_oracle_program.as_ref(),
+      ctx.accounts.token_oracle.as_ref()
+    );
     let actual_receive_amount = u64::try_from(
         // try to convert to u128 to prevent overflow
         u128::try_from(price)

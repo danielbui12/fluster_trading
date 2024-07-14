@@ -39,6 +39,14 @@ url = "https://api.mainnet-beta.solana.com"
 [[test.validator.clone]]
 address = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
 
+# Chainlink SOL/USD
+[[test.validator.clone]]
+address = "CH31Xns5z3M1cTAbKW34jcxPPciazARpijcHj9rxtemt"
+
+# Chainlink program
+[[test.validator.clone]]
+address = "HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny"
+
 # Pyth SOL/USD
 [[test.validator.clone]]
 address = "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG"

@@ -1,15 +1,18 @@
 use crate::error::ErrorCode;
 use crate::utils::{to_decimals, token::*};
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program;
+// use anchor_lang::solana_program;
 use anchor_spl::token_2022::spl_token_2022;
 use std::ops::Deref;
 
 /// withdraw based on user_token_mint
 pub fn withdraw(ctx: Context<crate::Deposit>, amount: u64) -> Result<()> {
-    let block_timestamp = solana_program::clock::Clock::get()?.unix_timestamp;
+    // let block_timestamp = solana_program::clock::Clock::get()?.unix_timestamp;
     // calculate actual amount
-    let (price, expo) = get_token_price(block_timestamp, ctx.accounts.token_oracle.as_ref());
+    let (price, expo) = get_token_price_from_chainlink(
+      ctx.accounts.token_oracle_program.as_ref(),
+      ctx.accounts.token_oracle.as_ref()
+    );
     let actual_receive_amount = u64::try_from(
         // try to convert to u128 to prevent overflow
         u128::try_from(price)

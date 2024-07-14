@@ -1,4 +1,4 @@
-use crate::{error::ErrorCode, utils::from_decimals};
+use crate::{error::ErrorCode};
 use anchor_lang::prelude::*;
 use anchor_spl::{
     token::{Token, TokenAccount},
@@ -17,8 +17,9 @@ use anchor_spl::{
         InitializeAccount3, Mint,
     },
 };
-use pyth_sdk_solana::state::SolanaPriceAccount;
-use spl_memo::solana_program::clock::UnixTimestamp;
+// use spl_memo::solana_program::clock::UnixTimestamp;
+// use pyth_sdk_solana::state::SolanaPriceAccount;
+use chainlink_solana as chainlink;
 
 pub fn transfer_token<'a>(
     authority: AccountInfo<'a>,
@@ -215,26 +216,52 @@ pub fn create_system_account<'a>(
     Ok(())
 }
 
-// invoke Pyth program to get token price
-pub fn get_token_price(block_timestamp: UnixTimestamp, price_account: &AccountInfo) -> (u64, u32) {
-    const STALENESS_THRESHOLD: u64 = 300; // staleness threshold in seconds, 5 minutes
-    let price_feed = SolanaPriceAccount::account_info_to_feed(price_account).unwrap();
-    let position_price = price_feed
-        .get_price_no_older_than(block_timestamp, STALENESS_THRESHOLD)
-        .unwrap();
-    let display_price = from_decimals(
-        u64::try_from(position_price.price).unwrap(),
-        u32::try_from(-position_price.expo).unwrap(),
-    );
-    #[cfg(feature = "enable-log")]
-    msg!(
-        "position_price: {} at {}",
-        display_price,
-        position_price.publish_time
-    );
+// /// invoke Pyth program to get token price
+// pub fn get_token_price_from_pyth(block_timestamp: UnixTimestamp, price_account: &AccountInfo) -> (u64, u32) {
+//     const STALENESS_THRESHOLD: u64 = 300; // staleness threshold in seconds, 5 minutes
+//     let price_feed = SolanaPriceAccount::account_info_to_feed(price_account).unwrap();
+//     let position_price = price_feed
+//         .get_price_no_older_than(block_timestamp, STALENESS_THRESHOLD)
+//         .unwrap();
+//     le(
+//         u64::try_from(position_price.price).unwrap(),
+//         u32::try_from(-position_price.expo).unwrap(),
+//     );
+//     #[cfg(feature = "enable-log")]
+//     msg!(
+//         "position_price: {} at {}",
+//         display_price,
+//         position_price.publish_time
+//     );
 
-    (
-        u64::try_from(position_price.price).unwrap(),
-        u32::try_from(-position_price.expo).unwrap(),
-    )
+//     (
+//         u64::try_from(position_price.price).unwrap(),
+//         u32::try_from(-position_price.expo).unwrap(),
+//     )
+// }
+
+/// invoke Chainlink program to get token price
+pub fn get_token_price_from_chainlink<'a>(chainlink_program: &AccountInfo<'a>, chainlink_feed: &AccountInfo<'a>) -> (u64, u32) {
+  let round = chainlink::latest_round_data(
+    chainlink_program.to_account_info(),
+    chainlink_feed.to_account_info(),
+  ).unwrap();
+
+  let description = chainlink::description(
+      chainlink_program.to_account_info(),
+      chainlink_feed.to_account_info(),
+  ).unwrap();
+
+  let decimals = chainlink::decimals(
+      chainlink_program.to_account_info(),
+      chainlink_feed.to_account_info(),
+  ).unwrap();
+
+  #[cfg(feature = "enable-log")]
+  msg!("{} price is {} with {} decimals", description, round.answer, decimals);
+
+  (
+      u64::try_from(round.answer).unwrap(),
+      u32::try_from(decimals).unwrap(),
+  )
 }

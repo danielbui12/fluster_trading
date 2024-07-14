@@ -1,6 +1,6 @@
 use crate::error::ErrorCode;
 use crate::states::*;
-use crate::utils::get_token_price;
+use crate::utils::get_token_price_from_chainlink;
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program;
 use anchor_spl::{token::Token, token_interface::Mint};
@@ -48,7 +48,10 @@ pub struct Reveal<'info> {
     #[account(
         address = pool_state.load()?.token_oracle
     )]
-    pub token_oracle: AccountInfo<'info>,
+    pub token_oracle: UncheckedAccount<'info>,
+
+    /// CHECK: This is the Chainlink program library on Devnet
+    pub token_oracle_program: UncheckedAccount<'info>,
 
     /// The FT mint
     #[account(
@@ -79,7 +82,10 @@ pub fn reveal(ctx: Context<Reveal>) -> Result<()> {
     msg!("Thread triggered");
 
     let current_token_price = {
-        let (price, _) = get_token_price(block_timestamp, ctx.accounts.token_oracle.as_ref());
+        let (price, _) = get_token_price_from_chainlink(
+          ctx.accounts.token_oracle_program.as_ref(),
+          ctx.accounts.token_oracle.as_ref()
+        );
         u64::try_from(price).unwrap()
     };
     user_betting.result_price = current_token_price;

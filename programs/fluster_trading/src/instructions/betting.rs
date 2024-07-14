@@ -69,7 +69,10 @@ pub struct Betting<'info> {
     #[account(
         address = pool_state.load()?.token_oracle
     )]
-    pub token_oracle: AccountInfo<'info>,
+    pub token_oracle: UncheckedAccount<'info>,
+
+    /// CHECK: Chainlink program
+    pub token_oracle_program: UncheckedAccount<'info>,
 
     /// The FT mint
     #[account(
@@ -117,8 +120,12 @@ pub fn betting(
         .unwrap();
 
     let current_token_price = {
-        let (price, _) = get_token_price(block_timestamp, ctx.accounts.token_oracle.as_ref());
-        u64::try_from(price).unwrap()
+      //   let (price, _) = get_token_price_from_chainlink(
+      //     ctx.accounts.token_oracle_program.as_ref(),
+      //     ctx.accounts.token_oracle.as_ref()
+      // );
+      // u64::try_from(price).unwrap()
+      1000u64
     };
 
     // cancel if price slippage is exceeded
