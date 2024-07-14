@@ -46,6 +46,9 @@ address = "CH31Xns5z3M1cTAbKW34jcxPPciazARpijcHj9rxtemt"
 # Chainlink program
 [[test.validator.clone]]
 address = "HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny"
+[[test.validator.clone]]
+address = "cjg3oHmg9uuPsP8D6g29NWvhySJkdYdAo9D25PRbKXJ"
+
 
 # Pyth SOL/USD
 [[test.validator.clone]]

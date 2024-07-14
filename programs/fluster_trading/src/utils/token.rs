@@ -1,4 +1,4 @@
-use crate::{error::ErrorCode};
+use crate::error::ErrorCode;
 use anchor_lang::prelude::*;
 use anchor_spl::{
     token::{Token, TokenAccount},
@@ -241,27 +241,38 @@ pub fn create_system_account<'a>(
 // }
 
 /// invoke Chainlink program to get token price
-pub fn get_token_price_from_chainlink<'a>(chainlink_program: &AccountInfo<'a>, chainlink_feed: &AccountInfo<'a>) -> (u64, u32) {
-  let round = chainlink::latest_round_data(
-    chainlink_program.to_account_info(),
-    chainlink_feed.to_account_info(),
-  ).unwrap();
+pub fn get_token_price_from_chainlink<'a>(
+    chainlink_program: &AccountInfo<'a>,
+    chainlink_feed: &AccountInfo<'a>,
+) -> (u64, u32) {
+    let round = chainlink::latest_round_data(
+        chainlink_program.to_account_info(),
+        chainlink_feed.to_account_info(),
+    )
+    .unwrap();
 
-  let description = chainlink::description(
-      chainlink_program.to_account_info(),
-      chainlink_feed.to_account_info(),
-  ).unwrap();
+    let description = chainlink::description(
+        chainlink_program.to_account_info(),
+        chainlink_feed.to_account_info(),
+    )
+    .unwrap();
 
-  let decimals = chainlink::decimals(
-      chainlink_program.to_account_info(),
-      chainlink_feed.to_account_info(),
-  ).unwrap();
+    let decimals = chainlink::decimals(
+        chainlink_program.to_account_info(),
+        chainlink_feed.to_account_info(),
+    )
+    .unwrap();
 
-  #[cfg(feature = "enable-log")]
-  msg!("{} price is {} with {} decimals", description, round.answer, decimals);
+    #[cfg(feature = "enable-log")]
+    msg!(
+        "{} price is {} with {} decimals",
+        description,
+        round.answer,
+        decimals
+    );
 
-  (
-      u64::try_from(round.answer).unwrap(),
-      u32::try_from(decimals).unwrap(),
-  )
+    (
+        u64::try_from(round.answer).unwrap(),
+        u32::try_from(decimals).unwrap(),
+    )
 }

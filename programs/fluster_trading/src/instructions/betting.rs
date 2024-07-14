@@ -120,12 +120,11 @@ pub fn betting(
         .unwrap();
 
     let current_token_price = {
-      //   let (price, _) = get_token_price_from_chainlink(
-      //     ctx.accounts.token_oracle_program.as_ref(),
-      //     ctx.accounts.token_oracle.as_ref()
-      // );
-      // u64::try_from(price).unwrap()
-      1000u64
+        let (price, _) = get_token_price_from_chainlink(
+            ctx.accounts.token_oracle_program.as_ref(),
+            ctx.accounts.token_oracle.as_ref(),
+        );
+        u64::try_from(price).unwrap()
     };
 
     // cancel if price slippage is exceeded
