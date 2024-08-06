@@ -1,35 +1,35 @@
-name: Soteria Audit Action
-on: [push]
+# name: Soteria Audit Action
+# on: [push]
 
-env:
-  SOLANA_VERSION: 1.17.0
-  RUN_MODE: -analyzeAll
-  CARGO_COM: .
-  PROGRAM_PATH: .
+# env:
+#   SOLANA_VERSION: 1.17.0
+#   RUN_MODE: -analyzeAll
+#   CARGO_COM: .
+#   PROGRAM_PATH: .
 
-jobs:
-  audit:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+# jobs:
+#   audit:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
 
-      - name: Install Solana
-        run: | 
-          echo Installing Solana v${{ env.SOLANA_VERSION }}... 🧬
-          sh -c "$(curl -sSfL https://release.solana.com/v${{ env.SOLANA_VERSION }}/install)"
-          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
-          echo Configuring bpf toolchain...
-          (cd /home/runner/.local/share/solana/install/active_release/bin/sdk/bpf/scripts; ./install.sh)
+#       - name: Install Solana
+#         run: | 
+#           echo Installing Solana v${{ env.SOLANA_VERSION }}... 🧬
+#           sh -c "$(curl -sSfL https://release.solana.com/v${{ env.SOLANA_VERSION }}/install)"
+#           echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+#           echo Configuring bpf toolchain...
+#           (cd /home/runner/.local/share/solana/install/active_release/bin/sdk/bpf/scripts; ./install.sh)
 
-      - name: Install Soteria
-        run: | 
-          echo Installing Soteria... 🔬
-          sh -c "$(curl -k https://supercompiler.xyz/install)"
-          echo "$PWD/soteria-linux-develop/bin" >> $GITHUB_PATH
+#       - name: Install Soteria
+#         run: | 
+#           echo Installing Soteria... 🔬
+#           sh -c "$(curl -k https://supercompiler.xyz/install)"
+#           echo "$PWD/soteria-linux-develop/bin" >> $GITHUB_PATH
 
-      - name: Run Soteria
-        run: |
-          echo Running Soteria... 🚀
-          cd ${{ env.PROGRAM_PATH }}
-          soteria ${{ env.RUN_MODE }} ${{ env.CARGO_COM }}
+#       - name: Run Soteria
+#         run: |
+#           echo Running Soteria... 🚀
+#           cd ${{ env.PROGRAM_PATH }}
+#           soteria ${{ env.RUN_MODE }} ${{ env.CARGO_COM }}
