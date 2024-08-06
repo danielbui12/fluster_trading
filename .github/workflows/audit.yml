@@ -1,5 +1,6 @@
 name: Soteria Audit Action
 author: silas-x
+on: [push]
 description: >
   Test Solana smart contract code for common vulnerabilities
 branding:
